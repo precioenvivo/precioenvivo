@@ -3,129 +3,186 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Precio en Vivo</title>
-<meta name="description" content="Precios de la canasta básica por ciudad y supermercado, reportados por la comunidad, en dólares y bolívares.">
-<meta name="theme-color" content="#ffd23f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23ffd23f'/%3E%3Ctext x='16' y='24' font-size='22' font-weight='800' text-anchor='middle' fill='%2314202b' font-family='Arial,sans-serif'%3E$%3C/text%3E%3C/svg%3E">
+<title>Tasas del día y precios | Precio en Vivo</title>
+<meta name="description" content="Dólar BCV, euro BCV y promedio USDT de hoy, y precios de la canasta básica por ciudad y supermercado reportados por la comunidad.">
+<meta name="theme-color" content="#0b2240">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%230b2240'/%3E%3Ctext x='16' y='24' font-size='22' font-weight='800' text-anchor='middle' fill='%23c9a24b' font-family='Arial,sans-serif'%3E$%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#edf0f3; --card:#ffffff; --ink:#14202b; --muted:#566574; --line:#d5dbe1;
-    --good:#0b7a43; --focus:#0a58ca;
-    --sign:#ffd23f; --sign-ink:#14202b;           /* amarillo de cartel: igual en claro y oscuro */
-    --display:"Barlow Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
-    --body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mist:#eceff3; --paper:#ffffff; --ink:#10213a; --slate:#41536f; --line:#d9dfe7;
+    --navy:#0b2240; --gold:#c9a24b; --rule:#0b2240;
+    --btn-bg:#0b2240; --btn-ink:#ffffff;
+    --good:#16683d; --focus:#0b2240;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   @media (prefers-color-scheme:dark){
-    :root{ --bg:#0e1419; --card:#16202a; --ink:#e8eef3; --muted:#9db0c0; --line:#26343f; --good:#5fd49b; --focus:#7db4ff; }
+    :root{ --mist:#0a1424; --paper:#12213a; --ink:#e9eff7; --slate:#a3b4cb; --line:#243752;
+           --rule:#3b5a88; --btn-bg:#c9a24b; --btn-ink:#0b2240; --good:#5fd49b; --focus:#c9a24b; }
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
+  body{margin:0;background:var(--mist);color:var(--ink);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
   .wrap{max-width:760px;margin:0 auto;padding:0 16px}
   :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  h1,h2,h3,p{margin:0}
 
-  /* Cartel de la tasa */
-  .tasa{background:var(--sign);color:var(--sign-ink)}
-  .tasa .wrap{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;column-gap:16px;row-gap:2px;padding-top:14px;padding-bottom:12px}
-  .tasa-label{margin:0;font-weight:700}
-  .tasa-num{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.6rem,11vw,3.6rem);line-height:1;font-variant-numeric:tabular-nums}
-  .tasa-num small{font-size:.5em;font-weight:700;margin-right:.3em}
-  .tasa-meta{margin:0;width:100%;font-size:.875rem}
+  /* Encabezado */
+  .top{background:var(--navy);color:#fff}
+  .top .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 24px;padding-top:28px;padding-bottom:24px}
+  .cuenta{color:var(--gold);font-weight:600;margin-bottom:6px}
+  .top h1{font-weight:600;font-size:clamp(2rem,9vw,3.3rem);line-height:1.04;letter-spacing:-.02em}
+  .fecha{color:#c7d2e3;line-height:1.35;text-align:right}
+  .fecha b{display:block;color:#fff;font-weight:600;font-size:1.2rem}
+  @media (max-width:480px){ .fecha{text-align:left;width:100%} }
 
-  header.marca{padding-top:18px}
-  .marca h1{margin:0;font-family:var(--display);font-weight:800;font-size:2.1rem;line-height:1.05}
-  .marca p{margin:2px 0 0;color:var(--muted)}
+  /* Tasas */
+  .tasas{display:grid;gap:12px;padding-top:20px}
+  .rate-lab{font-weight:600;font-size:1rem;color:var(--slate)}
+  .rate-val{margin-top:4px;font-weight:800;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+  .rate-val .bs{font-size:.32em;font-weight:600;letter-spacing:0;color:var(--slate);margin-right:.35em}
+  .rate-meta{margin-top:10px;font-size:.9rem;color:var(--slate)}
+  .rate-hero{background:var(--paper);border-top:6px solid var(--gold);padding:20px 22px 18px}
+  .rate-hero .rate-val{font-size:clamp(3.4rem,17vw,6.4rem)}
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .rate-card{background:var(--paper);border-top:4px solid var(--rule);padding:14px 16px 14px;min-width:0}
+  .rate-card .rate-lab{font-size:.92rem}
+  .rate-card .rate-val{font-size:clamp(1.55rem,7.4vw,2.7rem)}
+  .rate-card .rate-val .bs{font-size:.5em}
+  .rate-card .rate-meta{font-size:.8rem;margin-top:8px}
+  .brecha{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--navy);color:#fff;padding:14px 20px}
+  .brecha b{display:block;font-weight:600}
+  .brecha span{color:#c7d2e3;font-size:.9rem}
+  .brecha strong{color:var(--gold);font-weight:800;font-size:2rem;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
 
-  /* Ciudad */
-  .ciudad{padding:18px 0 4px}
-  .ciudad label{display:block;font-weight:700;margin-bottom:6px}
-  .ciudad input{width:100%;min-height:48px;font:inherit;padding:10px 12px;border:2px solid var(--ink);border-radius:4px;background:var(--card);color:var(--ink)}
+  /* Botones y comunidad */
+  .btn{display:inline-block;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;background:var(--btn-bg);color:var(--btn-ink);border:0;border-radius:3px;padding:12px 20px;min-height:46px}
+  .btns{display:flex;flex-wrap:wrap;gap:10px}
+  .comunidad{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;margin-top:12px;background:var(--paper);border-left:6px solid var(--gold);padding:16px 18px}
+  .comunidad p{font-weight:600}
+  .comunidad small{display:block;font-weight:400;color:var(--slate)}
+
+  /* Precios */
+  .precios{padding-top:34px}
+  .sec{font-weight:800;font-size:1.75rem;line-height:1.1;letter-spacing:-.025em}
+  .sub{margin:4px 0 16px;color:var(--slate)}
+  .ciudad label{display:block;font-weight:600;margin-bottom:6px}
+  .ciudad input{width:100%;min-height:48px;font:inherit;padding:10px 12px;border:2px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink)}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .chip{font:inherit;font-weight:600;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;min-height:44px;cursor:pointer}
-  .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .chip{font:inherit;font-weight:600;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:8px 14px;min-height:44px;cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
 
-  /* Resultados */
-  main{padding:8px 0 8px}
-  .res-head h2{margin:18px 0 0;font-family:var(--display);font-weight:700;font-size:1.75rem;line-height:1.1}
-  .res-head p{margin:2px 0 14px;color:var(--muted);font-size:.9375rem}
+  main{padding:8px 0}
+  .res-head h2{margin:22px 0 0;font-weight:800;font-size:1.4rem;letter-spacing:-.02em;line-height:1.15}
+  .res-head p{margin:2px 0 14px;color:var(--slate);font-size:.9rem}
   .grid{display:grid;grid-template-columns:1fr;gap:12px}
   @media (min-width:720px){ .grid{grid-template-columns:1fr 1fr} }
-
-  .card{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:4px;padding:14px 14px 4px}
+  .card{background:var(--paper);border-top:4px solid var(--rule);padding:16px 16px 6px}
   .card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-  .card h3{margin:0;font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.1}
-  .reps{color:var(--muted);font-size:.875rem;white-space:nowrap}
+  .card h3{font-weight:600;font-size:1.15rem;line-height:1.2}
+  .reps{color:var(--slate);font-size:.85rem;white-space:nowrap}
   .avg{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:8px 0 2px}
-  .avg-usd{font-family:var(--display);font-weight:800;font-size:2.7rem;line-height:1;font-variant-numeric:tabular-nums}
+  .avg-usd{font-weight:800;font-size:2.4rem;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
   .avg-bs{font-weight:600;font-variant-numeric:tabular-nums}
-  .avg-note{color:var(--muted);font-size:.875rem}
-  .range{margin:0 0 10px;color:var(--muted);font-size:.875rem}
+  .avg-note{color:var(--slate);font-size:.85rem}
+  .range{margin:0 0 12px;color:var(--slate);font-size:.85rem}
   .rank{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
   .rank li{display:grid;grid-template-columns:1.5rem 1fr auto;gap:0 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
   .rank li:last-child{border-bottom:0}
-  .pos{font-family:var(--display);font-weight:700;font-size:1.3rem;color:var(--muted)}
+  .pos{font-weight:800;font-size:1.1rem;color:var(--slate)}
   .sup{font-weight:600;overflow-wrap:anywhere}
   .info{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
   .tagline{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
-  .tag{background:var(--sign);color:var(--sign-ink);font-weight:700;font-size:.8125rem;line-height:1.3;padding:1px 8px;border-radius:2px}
-  .delta{color:var(--good);font-weight:600;font-size:.8125rem}
+  .tag{background:var(--gold);color:var(--navy);font-weight:600;font-size:.8rem;line-height:1.35;padding:1px 8px;border-radius:2px}
+  .delta{color:var(--good);font-weight:600;font-size:.8rem}
   .pr{text-align:right;font-variant-numeric:tabular-nums}
-  .pr b{display:block;font-family:var(--display);font-size:1.45rem;font-weight:700;line-height:1.1}
-  .pr span{font-size:.8125rem;color:var(--muted)}
+  .pr b{display:block;font-weight:800;font-size:1.3rem;line-height:1.1;letter-spacing:-.02em}
+  .pr span{font-size:.8rem;color:var(--slate)}
   .rank li.best .pos{color:var(--ink)}
-  .nota{margin:0 0 12px;color:var(--muted);font-size:.875rem}
-
-  .state{margin:28px 0;padding:18px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--ink);border-radius:4px}
-  .state h2{margin:0 0 4px;font-family:var(--display);font-size:1.5rem;font-weight:700;line-height:1.15}
-  .state p{margin:0 0 12px}
+  .nota{margin:0 0 12px;color:var(--slate);font-size:.85rem}
+  .state{margin:20px 0;padding:18px;background:var(--paper);border-left:6px solid var(--gold)}
+  .state h2{font-weight:800;font-size:1.3rem;line-height:1.2;letter-spacing:-.02em;margin-bottom:4px}
+  .state p{margin-bottom:12px}
   .state p:last-child{margin-bottom:0}
-  .btn{display:inline-block;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;background:var(--ink);color:var(--bg);border:0;border-radius:4px;padding:12px 18px;min-height:46px}
-  .cta{margin:20px 0 4px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:4px}
-  .cta p{margin:0 0 10px}
-  .unete{margin:20px 0 4px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:4px}
-  .unete p{margin:0 0 10px;font-weight:700}
-  .unete .btn{margin:0 8px 8px 0}
 
-  footer{margin-top:28px;padding:18px 0 32px;border-top:1px solid var(--line);color:var(--muted);font-size:.875rem}
-  footer p{margin:0 0 6px}
-  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  /* Reportar */
+  .ayuda{margin-top:34px;background:var(--gold);color:#0b2240;padding:24px 22px}
+  .ayuda h2{font-weight:800;font-size:1.5rem;line-height:1.2;letter-spacing:-.02em}
+  .ayuda p{margin:6px 0 16px}
+  .ayuda .btn{background:#0b2240;color:#fff}
+  .ayuda :focus-visible{outline-color:#0b2240}
+
+  footer{margin-top:30px;padding:18px 0 36px;border-top:1px solid var(--line);color:var(--slate);font-size:.85rem}
+  footer p{margin-bottom:6px}
 </style>
 </head>
 <body>
 
-<div class="tasa" role="region" aria-label="Tasa del dólar">
+<header class="top">
   <div class="wrap">
-    <p class="tasa-label">Dólar BCV de hoy</p>
-    <p class="tasa-num" id="tasa-num"><small>Bs</small><span>…</span></p>
-    <p class="tasa-meta" id="tasa-meta"></p>
+    <div>
+      <p class="cuenta" id="cuenta">@tasa.bcv</p>
+      <h1>Tasas del día</h1>
+    </div>
+    <p class="fecha" id="fecha"></p>
   </div>
-</div>
+</header>
 
 <div class="wrap">
-  <header class="marca">
-    <h1 id="nombre">Precio en Vivo</h1>
-    <p id="lema">Lo que la gente pagó hoy</p>
-  </header>
-
-  <section class="ciudad" aria-label="Elegir ciudad">
-    <label for="ciudad-input">Tu ciudad</label>
-    <input id="ciudad-input" list="ciudades" autocomplete="off" placeholder="Escribe tu ciudad">
-    <datalist id="ciudades"></datalist>
-    <div class="chips" id="chips" role="group" aria-label="Ciudades con precios"></div>
+  <section class="tasas" aria-label="Tasas de hoy">
+    <article class="rate-hero">
+      <h2 class="rate-lab">Dólar oficial BCV</h2>
+      <p class="rate-val" id="v-usd"><span class="bs">Bs</span><span class="n">…</span></p>
+      <p class="rate-meta" id="m-usd"></p>
+    </article>
+    <div class="dos">
+      <article class="rate-card">
+        <h2 class="rate-lab">Euro oficial BCV</h2>
+        <p class="rate-val" id="v-euro"><span class="bs">Bs</span><span class="n">…</span></p>
+        <p class="rate-meta" id="m-euro"></p>
+      </article>
+      <article class="rate-card">
+        <h2 class="rate-lab">Promedio USDT</h2>
+        <p class="rate-val" id="v-usdt"><span class="bs">Bs</span><span class="n">…</span></p>
+        <p class="rate-meta" id="m-usdt"></p>
+      </article>
+    </div>
+    <div class="brecha" id="brecha" hidden>
+      <div><b>Brecha USDT frente al dólar BCV</b><span id="brecha-txt"></span></div>
+      <strong id="brecha-n"></strong>
+    </div>
   </section>
 
-  <main id="resultados" aria-live="polite">
-    <noscript><div class="state"><h2>Activa JavaScript</h2><p>Esta página necesita JavaScript para mostrar los precios.</p></div></noscript>
-  </main>
+  <section class="comunidad" id="comunidad" hidden>
+    <p>Recibe la tasa cada mañana en tu celular<small>Únete al canal y te llega sola, sin abrir Instagram.</small></p>
+    <div class="btns" id="comunidad-btns"></div>
+  </section>
 
-  <section id="comunidad"></section>
+  <section class="precios" aria-label="Precios por ciudad">
+    <h2 class="sec">Precios en tu ciudad</h2>
+    <p class="sub" id="lema">Lo que la gente pagó hoy</p>
+    <div class="ciudad">
+      <label for="ciudad-input">Tu ciudad</label>
+      <input id="ciudad-input" list="ciudades" autocomplete="off" placeholder="Escribe tu ciudad">
+      <datalist id="ciudades"></datalist>
+      <div class="chips" id="chips" role="group" aria-label="Ciudades con precios"></div>
+    </div>
+    <main id="resultados" aria-live="polite">
+      <noscript><div class="state"><h2>Activa JavaScript</h2><p>Esta página necesita JavaScript para mostrar los precios.</p></div></noscript>
+    </main>
+  </section>
+
+  <section class="ayuda" id="ayuda" hidden>
+    <h2>Ayúdanos a conocer los precios reales</h2>
+    <p>Reporta lo que pagaste hoy en el súper. Toma menos de un minuto.</p>
+    <a class="btn" id="ayuda-btn" href="#" target="_blank" rel="noopener">Reportar un precio</a>
+  </section>
 
   <footer>
     <p>Página informativa, no oficial ni afiliada al Banco Central de Venezuela.</p>
-    <p>Los precios los reportan usuarios y son referenciales. Los bolívares se calculan con la tasa BCV de hoy.</p>
+    <p>Los precios los reportan usuarios y son referenciales. Los bolívares se calculan con la tasa BCV de hoy. El promedio USDT corresponde al mercado paralelo.</p>
   </footer>
 </div>
 
@@ -137,11 +194,13 @@
 const CONFIG = {
   NOMBRE: 'Precio en Vivo',
   LEMA: 'Lo que la gente pagó hoy',
+  CUENTA: '@tasa.bcv',
   CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSiTEbb-S1w1Fh54yaWdRhW652Y1egTr4N_0YmqWCC3lYBQuuew5PET_2X1rio5tCQUBJUoKKmZaEmO/pub?gid=665101661&single=true&output=csv',
-  TASA_URL: 'https://ve.dolarapi.com/v1/dolares/oficial',
-  FORM_URL: 'https://tinyurl.com/tasasdeldia',   // enlace del formulario: muestra el botón "Reportar un precio"
-  TELEGRAM_URL: 'https://t.me/tasasdeldia',   // canal de Telegram (déjalo vacío '' para ocultar el botón)
-  WHATSAPP_URL: '',   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
+  DOLARES_URL: 'https://ve.dolarapi.com/v1/dolares',   // dólar oficial y paralelo (USDT)
+  EUROS_URL: 'https://ve.dolarapi.com/v1/euros',
+  FORM_URL: 'https://tinyurl.com/tasasdeldia',          // formulario para reportar precios
+  TELEGRAM_URL: 'https://t.me/tasasdeldia',             // canal de Telegram ('' para ocultar el botón)
+  WHATSAPP_URL: '',                                     // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
 /* ========================================================= */
 
@@ -226,18 +285,42 @@ async function fetchText(url, ms){
 }
 
 /* ---------- estado ---------- */
-let data = [], tasa = null, tasaFecha = null, ciudad = null;
+let data = [], tasa = null, ciudad = null;
+const R = {usd: null, euro: null, usdt: null};   // cada una: {v: valor, f: fecha}
 const out = $('#resultados'), input = $('#ciudad-input');
 
-function renderTasa(){
-  const numEl = $('#tasa-num'), meta = $('#tasa-meta');
-  if (tasa){
-    numEl.innerHTML = '<small>Bs</small><span>' + esc(fmt.format(tasa)) + '</span>';
-    meta.textContent = tasaFecha ? 'Actualizado ' + cuando(tasaFecha) : 'Tasa oficial del BCV';
-  } else {
-    numEl.innerHTML = '<small>Bs</small><span>—</span>';
-    meta.textContent = 'No pudimos traer la tasa. Los precios en dólares siguen siendo válidos.';
-  }
+const medianoche = d => new Intl.DateTimeFormat('en-GB', {timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false}).format(d).replace(/^24/, '00') === '00:00';
+const fechaCorta = d => new Intl.DateTimeFormat('es-VE', {timeZone: TZ, day: '2-digit', month: '2-digit', year: 'numeric'}).format(d);
+const metaTxt = r => !r ? 'No pudimos traer este dato' : !r.f ? 'Tasa de hoy' : (medianoche(r.f) ? 'Tasa vigente ' + fechaCorta(r.f) : 'Actualizado ' + cuando(r.f));
+
+function ajustar(){
+  document.querySelectorAll('.rate-val').forEach(v => {
+    v.style.fontSize = '';
+    let s = parseFloat(getComputedStyle(v).fontSize);
+    while (v.scrollWidth > v.clientWidth && s > 16){ s -= 2; v.style.fontSize = s + 'px'; }
+  });
+}
+function setRate(k){
+  const r = R[k];
+  $('#v-' + k).innerHTML = '<span class="bs">Bs</span><span class="n">' + (r ? esc(fmt.format(r.v)) : '—') + '</span>';
+  $('#m-' + k).textContent = metaTxt(r);
+}
+function renderTasas(){
+  ['usd', 'euro', 'usdt'].forEach(setRate);
+  const ref = (R.usd && R.usd.f) || new Date();
+  const p = new Intl.DateTimeFormat('es-VE', {timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}).formatToParts(ref);
+  const g = t => (p.find(x => x.type === t) || {}).value || '';
+  const dia = g('weekday');
+  $('#fecha').innerHTML = '<b>' + esc(dia.charAt(0).toUpperCase() + dia.slice(1)) + '</b>' + esc(g('day') + ' de ' + g('month') + ' de ' + g('year'));
+  const br = $('#brecha');
+  if (R.usd && R.usdt){
+    const pct = (R.usdt.v / R.usd.v - 1) * 100;
+    $('#brecha-n').textContent = new Intl.NumberFormat('es-VE', {minimumFractionDigits: 1, maximumFractionDigits: 1}).format(Math.abs(pct)) + ' %';
+    $('#brecha-txt').textContent = 'Cuánto más ' + (pct >= 0 ? 'caro' : 'barato') + ' está el USDT';
+    br.hidden = false;
+  } else br.hidden = true;
+  ajustar();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustar);
 }
 const reportBtn = (txt) => CONFIG.FORM_URL ? '<a class="btn" href="' + esc(CONFIG.FORM_URL) + '" target="_blank" rel="noopener">' + txt + '</a>' : '';
 
@@ -303,27 +386,32 @@ function renderResultados(){
   const ult = filas.map(r => r.act).filter(Boolean).sort((a,b) => b - a)[0];
   out.innerHTML =
     '<div class="res-head"><h2>Precios en ' + esc(filas[0].ciudad) + '</h2><p>Con reportes de los últimos 7 días' + (ult ? '. Actualizado ' + esc(cuando(ult)) : '.') + '</p></div>' +
-    '<div class="grid">' + filas.map(card).join('') + '</div>' +
-    (CONFIG.FORM_URL ? '<div class="cta"><p>¿Pagaste otro precio? Cuéntalo para que la lista sea más completa.</p>' + reportBtn('Reportar un precio') + '</div>' : '');
+    '<div class="grid">' + filas.map(card).join('') + '</div>';
 }
 
 async function init(){
   showLoading();
-  const [csv, tas] = await Promise.allSettled([
+  const [csv, dol, eur] = await Promise.allSettled([
     fetchText(CONFIG.CSV_URL, 15000),
-    fetchText(CONFIG.TASA_URL, 10000).then(JSON.parse)
+    fetchText(CONFIG.DOLARES_URL, 10000).then(JSON.parse),
+    fetchText(CONFIG.EUROS_URL, 10000).then(JSON.parse)
   ]);
-  if (tas.status === 'fulfilled'){
-    const n = Number(tas.value.promedio);
-    if (n > 0){ tasa = n; tasaFecha = fecha(tas.value.fechaActualizacion); }
-  }
-  if (csv.status !== 'fulfilled'){ renderTasa(); return showError(); }
+  const pick = (res, fuente) => {
+    if (res.status !== 'fulfilled') return null;
+    const arr = Array.isArray(res.value) ? res.value : [res.value];
+    const x = arr.find(y => y && String(y.fuente).toLowerCase() === fuente);
+    const v = x ? Number(x.promedio) : NaN;
+    return v > 0 ? {v, f: fecha(x.fechaActualizacion)} : null;
+  };
+  R.usd = pick(dol, 'oficial'); R.usdt = pick(dol, 'paralelo'); R.euro = pick(eur, 'oficial');
+  if (csv.status !== 'fulfilled'){ tasa = R.usd ? R.usd.v : null; renderTasas(); return showError(); }
   data = parseData(csv.value);
-  if (!tasa){ const t = data.find(r => r.tasaCsv > 0); if (t){ tasa = t.tasaCsv; tasaFecha = t.act; } }
-  renderTasa(); buildCities();
+  if (!R.usd){ const t = data.find(r => r.tasaCsv > 0); if (t) R.usd = {v: t.tasaCsv, f: t.act}; }
+  tasa = R.usd ? R.usd.v : null;
+  renderTasas(); buildCities();
   const list = cityList(), saved = store.get('ciudad');
-  const pick = list.find(c => saved && norm(c.nombre) === norm(saved)) || (list.length === 1 ? list[0] : null);
-  if (pick) selectCity(pick.nombre); else { ciudad = null; markChips(); renderResultados(); }
+  const pickCity = list.find(c => saved && norm(c.nombre) === norm(saved)) || (list.length === 1 ? list[0] : null);
+  if (pickCity) selectCity(pickCity.nombre); else { ciudad = null; markChips(); renderResultados(); }
 }
 
 /* ---------- eventos ---------- */
@@ -337,14 +425,17 @@ input.addEventListener('change', () => {
   if (v && data.length && !cityList().some(c => norm(c.nombre) === norm(v))){ ciudad = v; markChips(); showNoCity(v); }
 });
 
-document.title = CONFIG.NOMBRE + ' - ' + CONFIG.LEMA;
-$('#nombre').textContent = CONFIG.NOMBRE;
+document.title = 'Tasas del día y precios | ' + CONFIG.NOMBRE;
+$('#cuenta').textContent = CONFIG.CUENTA;
 $('#lema').textContent = CONFIG.LEMA;
-renderTasa();
+renderTasas();
+
 const _com = [];
 if (CONFIG.TELEGRAM_URL) _com.push('<a class="btn" href="' + esc(CONFIG.TELEGRAM_URL) + '" target="_blank" rel="noopener">Canal de Telegram</a>');
 if (CONFIG.WHATSAPP_URL) _com.push('<a class="btn" href="' + esc(CONFIG.WHATSAPP_URL) + '" target="_blank" rel="noopener">Canal de WhatsApp</a>');
-if (_com.length) $('#comunidad').innerHTML = '<div class="unete"><p>Recibe la tasa cada mañana en tu celular</p>' + _com.join('') + '</div>';
+if (_com.length){ $('#comunidad-btns').innerHTML = _com.join(''); $('#comunidad').hidden = false; }
+if (CONFIG.FORM_URL){ $('#ayuda-btn').href = CONFIG.FORM_URL; $('#ayuda').hidden = false; }
+
 init();
 })();
 </script>
