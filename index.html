@@ -57,6 +57,29 @@
   .brecha span{color:#c7d2e3;font-size:.9rem}
   .brecha strong{color:var(--gold);font-weight:800;font-size:2rem;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
 
+
+  /* Calculadora */
+  .calc{margin-top:12px;background:var(--paper);border-top:4px solid var(--gold);padding:18px 18px 8px}
+  .calc h2{font-weight:800;font-size:1.5rem;line-height:1.1;letter-spacing:-.025em}
+  .calc .sub{margin:2px 0 14px}
+  .calc-lab{display:block;font-weight:600;margin-bottom:6px}
+  .calc-in{display:flex;align-items:center;border:2px solid var(--rule);border-radius:3px;background:var(--paper)}
+  .calc-in span{padding:0 4px 0 14px;font-weight:800;font-size:1.5rem;color:var(--slate)}
+  .calc-in input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:800;font-size:2rem;letter-spacing:-.02em;padding:8px 12px 8px 4px;min-height:56px;font-variant-numeric:tabular-nums}
+  .calc-in input:focus-visible{outline:0}
+  .calc-in:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+  .calc-src,.calc-quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .calc-quick .chip{font-variant-numeric:tabular-nums}
+  .calc-res{list-style:none;margin:16px 0 0;padding:0;border-top:1px solid var(--line)}
+  .calc-res li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .calc-res li:last-child{border-bottom:0}
+  .calc-res .k{font-weight:600}
+  .calc-res .k small{display:block;font-weight:400;color:var(--slate);font-size:.8rem}
+  .calc-res .v{font-weight:800;font-size:1.45rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .calc-res li.main .v{font-size:1.7rem}
+  .calc-res .k{min-width:0}
+  .calc-foot{margin:2px 0 10px;color:var(--slate);font-size:.8rem}
+
   /* Botones y comunidad */
   .btn{display:inline-block;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;background:var(--btn-bg);color:var(--btn-ink);border:0;border-radius:3px;padding:12px 20px;min-height:46px}
   .btns{display:flex;flex-wrap:wrap;gap:10px}
@@ -153,6 +176,18 @@
       <div><b>Brecha USDT frente al dólar BCV</b><span id="brecha-txt"></span></div>
       <strong id="brecha-n"></strong>
     </div>
+  </section>
+
+
+  <section class="calc" aria-label="Calculadora de divisas">
+    <h2>Calculadora</h2>
+    <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
+    <label class="calc-lab" for="calc-monto">Monto</label>
+    <div class="calc-in"><span id="calc-sim">$</span><input id="calc-monto" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="calc-foot"></div>
+    <div class="calc-quick" id="calc-quick" role="group" aria-label="Montos rápidos"></div>
+    <div class="calc-src" id="calc-src" role="group" aria-label="Moneda del monto"></div>
+    <ul class="calc-res" id="calc-res" aria-live="polite"></ul>
+    <p class="calc-foot" id="calc-foot">Las tasas se actualizan solas cada 5 minutos.</p>
   </section>
 
   <section class="comunidad" id="comunidad" hidden>
@@ -321,6 +356,7 @@ function renderTasas(){
   } else br.hidden = true;
   ajustar();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustar);
+  if (typeof renderCalc === 'function' && $('#calc-res')) renderCalc();
 }
 const reportBtn = (txt) => CONFIG.FORM_URL ? '<a class="btn" href="' + esc(CONFIG.FORM_URL) + '" target="_blank" rel="noopener">' + txt + '</a>' : '';
 
@@ -386,58 +422,4 @@ function renderResultados(){
   const ult = filas.map(r => r.act).filter(Boolean).sort((a,b) => b - a)[0];
   out.innerHTML =
     '<div class="res-head"><h2>Precios en ' + esc(filas[0].ciudad) + '</h2><p>Con reportes de los últimos 7 días' + (ult ? '. Actualizado ' + esc(cuando(ult)) : '.') + '</p></div>' +
-    '<div class="grid">' + filas.map(card).join('') + '</div>';
-}
-
-async function init(){
-  showLoading();
-  const [csv, dol, eur] = await Promise.allSettled([
-    fetchText(CONFIG.CSV_URL, 15000),
-    fetchText(CONFIG.DOLARES_URL, 10000).then(JSON.parse),
-    fetchText(CONFIG.EUROS_URL, 10000).then(JSON.parse)
-  ]);
-  const pick = (res, fuente) => {
-    if (res.status !== 'fulfilled') return null;
-    const arr = Array.isArray(res.value) ? res.value : [res.value];
-    const x = arr.find(y => y && String(y.fuente).toLowerCase() === fuente);
-    const v = x ? Number(x.promedio) : NaN;
-    return v > 0 ? {v, f: fecha(x.fechaActualizacion)} : null;
-  };
-  R.usd = pick(dol, 'oficial'); R.usdt = pick(dol, 'paralelo'); R.euro = pick(eur, 'oficial');
-  if (csv.status !== 'fulfilled'){ tasa = R.usd ? R.usd.v : null; renderTasas(); return showError(); }
-  data = parseData(csv.value);
-  if (!R.usd){ const t = data.find(r => r.tasaCsv > 0); if (t) R.usd = {v: t.tasaCsv, f: t.act}; }
-  tasa = R.usd ? R.usd.v : null;
-  renderTasas(); buildCities();
-  const list = cityList(), saved = store.get('ciudad');
-  const pickCity = list.find(c => saved && norm(c.nombre) === norm(saved)) || (list.length === 1 ? list[0] : null);
-  if (pickCity) selectCity(pickCity.nombre); else { ciudad = null; markChips(); renderResultados(); }
-}
-
-/* ---------- eventos ---------- */
-$('#chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) selectCity(b.dataset.c); });
-input.addEventListener('input', () => {
-  const m = cityList().find(c => norm(c.nombre) === norm(input.value));
-  if (m) selectCity(m.nombre);
-});
-input.addEventListener('change', () => {
-  const v = input.value.trim();
-  if (v && data.length && !cityList().some(c => norm(c.nombre) === norm(v))){ ciudad = v; markChips(); showNoCity(v); }
-});
-
-document.title = 'Tasas del día y precios | ' + CONFIG.NOMBRE;
-$('#cuenta').textContent = CONFIG.CUENTA;
-$('#lema').textContent = CONFIG.LEMA;
-renderTasas();
-
-const _com = [];
-if (CONFIG.TELEGRAM_URL) _com.push('<a class="btn" href="' + esc(CONFIG.TELEGRAM_URL) + '" target="_blank" rel="noopener">Canal de Telegram</a>');
-if (CONFIG.WHATSAPP_URL) _com.push('<a class="btn" href="' + esc(CONFIG.WHATSAPP_URL) + '" target="_blank" rel="noopener">Canal de WhatsApp</a>');
-if (_com.length){ $('#comunidad-btns').innerHTML = _com.join(''); $('#comunidad').hidden = false; }
-if (CONFIG.FORM_URL){ $('#ayuda-btn').href = CONFIG.FORM_URL; $('#ayuda').hidden = false; }
-
-init();
-})();
-</script>
-</body>
-</html>
+    '<div class="grid">' + filas.map(card).join('')
