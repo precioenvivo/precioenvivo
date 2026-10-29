@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Precio en Vivo</title>
+<meta name="description" content="Precios de la canasta básica por ciudad y supermercado, reportados por la comunidad, en dólares y bolívares.">
+<meta name="theme-color" content="#ffd23f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23ffd23f'/%3E%3Ctext x='16' y='24' font-size='22' font-weight='800' text-anchor='middle' fill='%2314202b' font-family='Arial,sans-serif'%3E$%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#edf0f3; --card:#ffffff; --ink:#14202b; --muted:#566574; --line:#d5dbe1;
+    --good:#0b7a43; --focus:#0a58ca;
+    --sign:#ffd23f; --sign-ink:#14202b;           /* amarillo de cartel: igual en claro y oscuro */
+    --display:"Barlow Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
+    --body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0e1419; --card:#16202a; --ink:#e8eef3; --muted:#9db0c0; --line:#26343f; --good:#5fd49b; --focus:#7db4ff; }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+  /* Cartel de la tasa */
+  .tasa{background:var(--sign);color:var(--sign-ink)}
+  .tasa .wrap{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;column-gap:16px;row-gap:2px;padding-top:14px;padding-bottom:12px}
+  .tasa-label{margin:0;font-weight:700}
+  .tasa-num{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.6rem,11vw,3.6rem);line-height:1;font-variant-numeric:tabular-nums}
+  .tasa-num small{font-size:.5em;font-weight:700;margin-right:.3em}
+  .tasa-meta{margin:0;width:100%;font-size:.875rem}
+
+  header.marca{padding-top:18px}
+  .marca h1{margin:0;font-family:var(--display);font-weight:800;font-size:2.1rem;line-height:1.05}
+  .marca p{margin:2px 0 0;color:var(--muted)}
+
+  /* Ciudad */
+  .ciudad{padding:18px 0 4px}
+  .ciudad label{display:block;font-weight:700;margin-bottom:6px}
+  .ciudad input{width:100%;min-height:48px;font:inherit;padding:10px 12px;border:2px solid var(--ink);border-radius:4px;background:var(--card);color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .chip{font:inherit;font-weight:600;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;min-height:44px;cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+  /* Resultados */
+  main{padding:8px 0 8px}
+  .res-head h2{margin:18px 0 0;font-family:var(--display);font-weight:700;font-size:1.75rem;line-height:1.1}
+  .res-head p{margin:2px 0 14px;color:var(--muted);font-size:.9375rem}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media (min-width:720px){ .grid{grid-template-columns:1fr 1fr} }
+
+  .card{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:4px;padding:14px 14px 4px}
+  .card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card h3{margin:0;font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.1}
+  .reps{color:var(--muted);font-size:.875rem;white-space:nowrap}
+  .avg{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:8px 0 2px}
+  .avg-usd{font-family:var(--display);font-weight:800;font-size:2.7rem;line-height:1;font-variant-numeric:tabular-nums}
+  .avg-bs{font-weight:600;font-variant-numeric:tabular-nums}
+  .avg-note{color:var(--muted);font-size:.875rem}
+  .range{margin:0 0 10px;color:var(--muted);font-size:.875rem}
+  .rank{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+  .rank li{display:grid;grid-template-columns:1.5rem 1fr auto;gap:0 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .rank li:last-child{border-bottom:0}
+  .pos{font-family:var(--display);font-weight:700;font-size:1.3rem;color:var(--muted)}
+  .sup{font-weight:600;overflow-wrap:anywhere}
+  .info{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+  .tagline{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+  .tag{background:var(--sign);color:var(--sign-ink);font-weight:700;font-size:.8125rem;line-height:1.3;padding:1px 8px;border-radius:2px}
+  .delta{color:var(--good);font-weight:600;font-size:.8125rem}
+  .pr{text-align:right;font-variant-numeric:tabular-nums}
+  .pr b{display:block;font-family:var(--display);font-size:1.45rem;font-weight:700;line-height:1.1}
+  .pr span{font-size:.8125rem;color:var(--muted)}
+  .rank li.best .pos{color:var(--ink)}
+  .nota{margin:0 0 12px;color:var(--muted);font-size:.875rem}
+
+  .state{margin:28px 0;padding:18px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--ink);border-radius:4px}
+  .state h2{margin:0 0 4px;font-family:var(--display);font-size:1.5rem;font-weight:700;line-height:1.15}
+  .state p{margin:0 0 12px}
+  .state p:last-child{margin-bottom:0}
+  .btn{display:inline-block;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;background:var(--ink);color:var(--bg);border:0;border-radius:4px;padding:12px 18px;min-height:46px}
+  .cta{margin:20px 0 4px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:4px}
+  .cta p{margin:0 0 10px}
+
+  footer{margin-top:28px;padding:18px 0 32px;border-top:1px solid var(--line);color:var(--muted);font-size:.875rem}
+  footer p{margin:0 0 6px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div class="tasa" role="region" aria-label="Tasa del dólar">
+  <div class="wrap">
+    <p class="tasa-label">Dólar BCV de hoy</p>
+    <p class="tasa-num" id="tasa-num"><small>Bs</small><span>…</span></p>
+    <p class="tasa-meta" id="tasa-meta"></p>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="marca">
+    <h1 id="nombre">Precio en Vivo</h1>
+    <p id="lema">Lo que la gente pagó hoy</p>
+  </header>
+
+  <section class="ciudad" aria-label="Elegir ciudad">
+    <label for="ciudad-input">Tu ciudad</label>
+    <input id="ciudad-input" list="ciudades" autocomplete="off" placeholder="Escribe tu ciudad">
+    <datalist id="ciudades"></datalist>
+    <div class="chips" id="chips" role="group" aria-label="Ciudades con precios"></div>
+  </section>
+
+  <main id="resultados" aria-live="polite">
+    <noscript><div class="state"><h2>Activa JavaScript</h2><p>Esta página necesita JavaScript para mostrar los precios.</p></div></noscript>
+  </main>
+
+  <footer>
+    <p>Página informativa, no oficial ni afiliada al Banco Central de Venezuela.</p>
+    <p>Los precios los reportan usuarios y son referenciales. Los bolívares se calculan con la tasa BCV de hoy.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ===== AJUSTES: aquí cambias nombre, lema y enlaces ===== */
+const CONFIG = {
+  NOMBRE: 'Precio en Vivo',
+  LEMA: 'Lo que la gente pagó hoy',
+  CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSiTEbb-S1w1Fh54yaWdRhW652Y1egTr4N_0YmqWCC3lYBQuuew5PET_2X1rio5tCQUBJUoKKmZaEmO/pub?gid=665101661&single=true&output=csv',
+  TASA_URL: 'https://ve.dolarapi.com/v1/dolares/oficial',
+  FORM_URL: '',   // pega aquí el enlace del formulario para mostrar el botón "Reportar un precio"
+};
+/* ========================================================= */
+
+const TZ = 'America/Caracas';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const fmt = new Intl.NumberFormat('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const usd = n => '$' + fmt.format(n);
+const bsf = n => 'Bs ' + fmt.format(n);
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+};
+
+/* ---------- fechas ---------- */
+const diaKey = d => new Intl.DateTimeFormat('en-CA', {timeZone: TZ}).format(d);
+const horaTxt = d => new Intl.DateTimeFormat('es-VE', {timeZone: TZ, hour: 'numeric', minute: '2-digit', hour12: true}).format(d);
+const diaMes = d => new Intl.DateTimeFormat('es-VE', {timeZone: TZ, day: 'numeric', month: 'short'}).format(d);
+const cuando = d => d ? ((diaKey(d) === diaKey(new Date()) ? 'hoy' : diaMes(d)) + ', ' + horaTxt(d)) : '';
+function fecha(v){
+  if (!v) return null;
+  const s = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const d = new Date(s); return isNaN(d) ? null : d; }
+  const m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  return m ? new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5], +(m[6] || 0)) : null;
+}
+
+/* ---------- números y CSV ---------- */
+function num(v){
+  if (v == null) return NaN;
+  let s = String(v).trim().replace(/\s|\$|Bs\.?/gi, '');
+  if (!s) return NaN;
+  const c = s.includes(','), p = s.includes('.');
+  if (c && p) s = s.lastIndexOf(',') > s.lastIndexOf('.') ? s.replace(/\./g,'').replace(',','.') : s.replace(/,/g,'');
+  else if (c) s = /^\d{1,3}(,\d{3})+$/.test(s) ? s.replace(/,/g,'') : s.replace(',','.');
+  else if (p && /^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g,'');
+  return Number(s);
+}
+function parseCSV(text){
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){
+      if (ch === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; }
+      else f += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(f); f = ''; }
+    else if (ch === '\n' || ch === '\r'){ if (ch === '\r' && text[i+1] === '\n') i++; row.push(f); f = ''; rows.push(row); row = []; }
+    else f += ch;
+  }
+  if (f !== '' || row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim() !== ''));
+}
+function parseData(text){
+  const rows = parseCSV(text.replace(/^﻿/, ''));
+  if (rows.length < 2) return [];
+  const head = rows[0].map(norm), ix = k => head.indexOf(k);
+  const I = {pro: ix('producto'), ciu: ix('ciudad'), prom: ix('promedio_usd'), min: ix('minimo_usd'), max: ix('maximo_usd'),
+             rep: ix('reportes'), ran: ix('ranking'), tas: ix('tasa_usada'), act: ix('actualizado')};
+  if (I.pro < 0 || I.ciu < 0 || I.prom < 0) return [];
+  return rows.slice(1).map(r => {
+    let ranking = [];
+    try {
+      const j = JSON.parse(r[I.ran] || '[]');
+      if (Array.isArray(j)) ranking = j.map(x => ({nombre: String(x.supermercado || '').trim(), usd: Number(x.precio_usd), rep: Number(x.reportes) || 0}))
+                                       .filter(x => x.nombre && x.usd > 0).sort((a,b) => a.usd - b.usd);
+    } catch(e){}
+    return {producto: (r[I.pro] || '').trim(), ciudad: (r[I.ciu] || '').trim(), prom: num(r[I.prom]), min: num(r[I.min]), max: num(r[I.max]),
+            rep: num(r[I.rep]) || 0, ranking, tasaCsv: num(r[I.tas]), act: fecha(r[I.act])};
+  }).filter(x => x.producto && x.ciudad && x.prom > 0);
+}
+
+/* ---------- red ---------- */
+async function fetchText(url, ms){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, {signal: ctl.signal, cache: 'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.text();
+  } finally { clearTimeout(t); }
+}
+
+/* ---------- estado ---------- */
+let data = [], tasa = null, tasaFecha = null, ciudad = null;
+const out = $('#resultados'), input = $('#ciudad-input');
+
+function renderTasa(){
+  const numEl = $('#tasa-num'), meta = $('#tasa-meta');
+  if (tasa){
+    numEl.innerHTML = '<small>Bs</small><span>' + esc(fmt.format(tasa)) + '</span>';
+    meta.textContent = tasaFecha ? 'Actualizado ' + cuando(tasaFecha) : 'Tasa oficial del BCV';
+  } else {
+    numEl.innerHTML = '<small>Bs</small><span>—</span>';
+    meta.textContent = 'No pudimos traer la tasa. Los precios en dólares siguen siendo válidos.';
+  }
+}
+const reportBtn = (txt) => CONFIG.FORM_URL ? '<a class="btn" href="' + esc(CONFIG.FORM_URL) + '" target="_blank" rel="noopener">' + txt + '</a>' : '';
+
+function showLoading(){ out.innerHTML = '<div class="state"><p>Cargando precios…</p></div>'; }
+function showError(){
+  out.innerHTML = '<div class="state"><h2>No pudimos cargar los precios</h2><p>Revisa tu conexión y vuelve a intentar.</p><button class="btn" id="reintentar" type="button">Reintentar</button></div>';
+  $('#reintentar').addEventListener('click', init);
+}
+function showEmpty(){
+  out.innerHTML = '<div class="state"><h2>Todavía estamos juntando precios</h2><p>Cada reporte ayuda a que la lista sea más completa. Vuelve mañana.</p>' + (reportBtn('Reportar un precio') ? '<p>' + reportBtn('Reportar un precio') + '</p>' : '') + '</div>';
+}
+function showPickCity(){
+  out.innerHTML = '<div class="state"><p>Elige tu ciudad para ver dónde está más barato.</p></div>';
+}
+function showNoCity(txt){
+  out.innerHTML = '<div class="state"><h2>Aún no hay precios en ' + esc(txt) + '</h2><p>Todavía nadie la ha reportado. Elige otra ciudad o sé el primero en reportar.</p>' + (reportBtn('Reportar un precio') ? '<p>' + reportBtn('Reportar un precio') + '</p>' : '') + '</div>';
+}
+
+function cityList(){
+  const m = new Map();
+  for (const r of data){ const k = norm(r.ciudad), c = m.get(k) || {nombre: r.ciudad, rep: 0}; c.rep += r.rep; m.set(k, c); }
+  return [...m.values()].sort((a,b) => b.rep - a.rep);
+}
+function buildCities(){
+  const list = cityList();
+  $('#ciudades').innerHTML = list.map(c => '<option value="' + esc(c.nombre) + '"></option>').join('');
+  $('#chips').innerHTML = list.slice(0, 8).map(c => '<button type="button" class="chip" data-c="' + esc(c.nombre) + '" aria-pressed="false">' + esc(c.nombre) + '</button>').join('');
+}
+function markChips(){
+  document.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(ciudad && norm(b.dataset.c) === norm(ciudad))));
+}
+function selectCity(name){
+  ciudad = name; input.value = name; store.set('ciudad', name); markChips(); renderResultados();
+}
+
+function card(r){
+  const conBs = n => tasa ? bsf(n * tasa) : '';
+  const best = r.ranking[0], varios = r.ranking.length > 1;
+  let rank = '';
+  if (r.ranking.length){
+    rank = '<ol class="rank">' + r.ranking.map((s, i) => {
+      const esBest = varios && i === 0;
+      const dif = Math.round((1 - s.usd / r.prom) * 100);
+      const tag = esBest ? '<span class="tagline"><span class="tag">Más barato</span>' + (dif >= 1 ? '<span class="delta">' + dif + '% bajo el promedio</span>' : '') + '</span>' : '';
+      return '<li' + (esBest ? ' class="best"' : '') + '><span class="pos">' + (i+1) + '</span><span class="info"><span class="sup">' + esc(s.nombre) + '</span>' + tag + '</span>' +
+             '<span class="pr"><b>' + usd(s.usd) + '</b>' + (tasa ? '<span>' + conBs(s.usd) + '</span>' : '') + '</span></li>';
+    }).join('') + '</ol>';
+  } else {
+    rank = '<p class="nota">Aún no hay supermercados con suficientes reportes.</p>';
+  }
+  const nota = r.ranking.length === 1 ? '<p class="nota">Por ahora solo hay reportes de un supermercado.</p>' : '';
+  const rango = (r.min > 0 && r.max > 0) ? '<p class="range">Entre ' + usd(r.min) + ' y ' + usd(r.max) + '</p>' : '';
+  return '<article class="card"><div class="card-head"><h3>' + esc(r.producto) + '</h3><span class="reps">' + (r.rep ? r.rep + (r.rep === 1 ? ' reporte' : ' reportes') : '') + '</span></div>' +
+         '<div class="avg"><span class="avg-usd">' + usd(r.prom) + '</span>' + (tasa ? '<span class="avg-bs">' + conBs(r.prom) + '</span>' : '') + '<span class="avg-note">promedio</span></div>' +
+         rango + rank + nota + '</article>';
+}
+
+function renderResultados(){
+  if (!data.length) return showEmpty();
+  if (!ciudad) return showPickCity();
+  const filas = data.filter(r => norm(r.ciudad) === norm(ciudad));
+  if (!filas.length) return showNoCity(ciudad);
+  const ult = filas.map(r => r.act).filter(Boolean).sort((a,b) => b - a)[0];
+  out.innerHTML =
+    '<div class="res-head"><h2>Precios en ' + esc(filas[0].ciudad) + '</h2><p>Con reportes de los últimos 7 días' + (ult ? '. Actualizado ' + esc(cuando(ult)) : '.') + '</p></div>' +
+    '<div class="grid">' + filas.map(card).join('') + '</div>' +
+    (CONFIG.FORM_URL ? '<div class="cta"><p>¿Pagaste otro precio? Cuéntalo para que la lista sea más completa.</p>' + reportBtn('Reportar un precio') + '</div>' : '');
+}
+
+async function init(){
+  showLoading();
+  const [csv, tas] = await Promise.allSettled([
+    fetchText(CONFIG.CSV_URL, 15000),
+    fetchText(CONFIG.TASA_URL, 10000).then(JSON.parse)
+  ]);
+  if (tas.status === 'fulfilled'){
+    const n = Number(tas.value.promedio);
+    if (n > 0){ tasa = n; tasaFecha = fecha(tas.value.fechaActualizacion); }
+  }
+  if (csv.status !== 'fulfilled'){ renderTasa(); return showError(); }
+  data = parseData(csv.value);
+  if (!tasa){ const t = data.find(r => r.tasaCsv > 0); if (t){ tasa = t.tasaCsv; tasaFecha = t.act; } }
+  renderTasa(); buildCities();
+  const list = cityList(), saved = store.get('ciudad');
+  const pick = list.find(c => saved && norm(c.nombre) === norm(saved)) || (list.length === 1 ? list[0] : null);
+  if (pick) selectCity(pick.nombre); else { ciudad = null; markChips(); renderResultados(); }
+}
+
+/* ---------- eventos ---------- */
+$('#chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) selectCity(b.dataset.c); });
+input.addEventListener('input', () => {
+  const m = cityList().find(c => norm(c.nombre) === norm(input.value));
+  if (m) selectCity(m.nombre);
+});
+input.addEventListener('change', () => {
+  const v = input.value.trim();
+  if (v && data.length && !cityList().some(c => norm(c.nombre) === norm(v))){ ciudad = v; markChips(); showNoCity(v); }
+});
+
+document.title = CONFIG.NOMBRE + ' - ' + CONFIG.LEMA;
+$('#nombre').textContent = CONFIG.NOMBRE;
+$('#lema').textContent = CONFIG.LEMA;
+renderTasa();
+init();
+})();
+</script>
+</body>
+</html>
