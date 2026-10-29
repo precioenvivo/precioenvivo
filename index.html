@@ -85,6 +85,9 @@
   .btn{display:inline-block;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;background:var(--ink);color:var(--bg);border:0;border-radius:4px;padding:12px 18px;min-height:46px}
   .cta{margin:20px 0 4px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:4px}
   .cta p{margin:0 0 10px}
+  .unete{margin:20px 0 4px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:4px}
+  .unete p{margin:0 0 10px;font-weight:700}
+  .unete .btn{margin:0 8px 8px 0}
 
   footer{margin-top:28px;padding:18px 0 32px;border-top:1px solid var(--line);color:var(--muted);font-size:.875rem}
   footer p{margin:0 0 6px}
@@ -118,6 +121,8 @@
     <noscript><div class="state"><h2>Activa JavaScript</h2><p>Esta página necesita JavaScript para mostrar los precios.</p></div></noscript>
   </main>
 
+  <section id="comunidad"></section>
+
   <footer>
     <p>Página informativa, no oficial ni afiliada al Banco Central de Venezuela.</p>
     <p>Los precios los reportan usuarios y son referenciales. Los bolívares se calculan con la tasa BCV de hoy.</p>
@@ -134,7 +139,9 @@ const CONFIG = {
   LEMA: 'Lo que la gente pagó hoy',
   CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSiTEbb-S1w1Fh54yaWdRhW652Y1egTr4N_0YmqWCC3lYBQuuew5PET_2X1rio5tCQUBJUoKKmZaEmO/pub?gid=665101661&single=true&output=csv',
   TASA_URL: 'https://ve.dolarapi.com/v1/dolares/oficial',
-  FORM_URL:'https://docs.google.com/forms/d/e/1FAIpQLSfWETcnba49uNzVKDoxcp5UdAalUTCwlRm6PJ88RseRESHI6g/viewform',   // pega aquí el enlace del formulario para mostrar el botón "Reportar un precio"
+  FORM_URL: 'https://tinyurl.com/tasasdeldia',   // enlace del formulario: muestra el botón "Reportar un precio"
+  TELEGRAM_URL: 'https://t.me/tasasdeldia',   // canal de Telegram (déjalo vacío '' para ocultar el botón)
+  WHATSAPP_URL: '',   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
 /* ========================================================= */
 
@@ -334,6 +341,10 @@ document.title = CONFIG.NOMBRE + ' - ' + CONFIG.LEMA;
 $('#nombre').textContent = CONFIG.NOMBRE;
 $('#lema').textContent = CONFIG.LEMA;
 renderTasa();
+const _com = [];
+if (CONFIG.TELEGRAM_URL) _com.push('<a class="btn" href="' + esc(CONFIG.TELEGRAM_URL) + '" target="_blank" rel="noopener">Canal de Telegram</a>');
+if (CONFIG.WHATSAPP_URL) _com.push('<a class="btn" href="' + esc(CONFIG.WHATSAPP_URL) + '" target="_blank" rel="noopener">Canal de WhatsApp</a>');
+if (_com.length) $('#comunidad').innerHTML = '<div class="unete"><p>Recibe la tasa cada mañana en tu celular</p>' + _com.join('') + '</div>';
 init();
 })();
 </script>
