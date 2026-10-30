@@ -658,14 +658,23 @@ function setupPush(){
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(async function(OneSignal){
     try {
-      const base = new URL('./', location.href).pathname;
       await OneSignal.init({
         appId: CONFIG.ONESIGNAL_APP_ID,
-        serviceWorkerPath: new URL('sw.js', location.href).pathname.replace(/^\//, ''),
-        serviceWorkerParam: { scope: base },
         allowLocalhostAsSecureOrigin: true
       });
       OS = OneSignal;
+      if (/[?&]debug/.test(location.search)){
+        const info = async () => {
+          const l = [];
+          try { l.push('permiso navegador: ' + Notification.permission); } catch(e){}
+          try { l.push('push soportado: ' + OS.Notifications.isPushSupported()); } catch(e){ l.push('soportado: error ' + e.message); }
+          try { const ps = OS.User.PushSubscription; l.push('suscripción id: ' + (ps.id || '(ninguna)')); l.push('opted in: ' + ps.optedIn); } catch(e){ l.push('suscripción: error ' + e.message); }
+          try { const r = await navigator.serviceWorker.getRegistrations(); l.push('service workers: ' + (r.map(x => (x.active ? x.active.state : 'sin activo') + ' ' + x.scope).join(' | ') || '(ninguno)')); } catch(e){ l.push('sw: error ' + e.message); }
+          diag('DEBUG\n' + l.join('\n'));
+        };
+        setTimeout(info, 1500);
+        const btn2 = $('#push-btn'); btn2.addEventListener('click', () => setTimeout(info, 2500));
+      }
       try { OneSignal.Notifications.addEventListener('permissionChange', () => { track('push-permiso'); refrescar(); }); } catch(e){}
       refrescar();
     } catch(e){ diag('OneSignal: ' + e.message); }
