@@ -96,12 +96,18 @@
   .aviso .btn[disabled]{opacity:.85;cursor:default}
 
   [hidden]{display:none !important}
-  .tabs{background:var(--navy);border-top:1px solid #1f4378}
-  .tabs .wrap{display:flex;gap:6px;padding-top:0;padding-bottom:0}
-  .tab{font:inherit;font-weight:600;color:#c7d2e3;background:transparent;border:0;border-bottom:4px solid transparent;padding:12px 18px 10px;min-height:48px;cursor:pointer}
-  .tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold)}
-  body[data-tab="tasas"] .vp{display:none}
-  body[data-tab="precios"] .vt{display:none}
+  .tabs{background:var(--navy);border-top:1px solid #1f4378;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+  .tabs .wrap{display:flex;gap:4px;padding-top:0;padding-bottom:0}
+  .tab{flex:1;font:inherit;font-weight:700;font-size:1rem;color:#c7d2e3;background:transparent;border:0;border-bottom:5px solid transparent;padding:12px 6px 9px;min-height:56px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1}
+  .tab i{font-style:normal;font-size:1.25rem}
+  .tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.07)}
+  body[data-tab="tasas"] .vp, body[data-tab="tasas"] .vc{display:none}
+  body[data-tab="calculadora"] .vt, body[data-tab="calculadora"] .vp{display:none}
+  body[data-tab="precios"] .vt, body[data-tab="precios"] .vc{display:none}
+  .instalar-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:12px;background:var(--gold);color:#0b2240;padding:14px 16px}
+  .instalar-top p{font-weight:700;line-height:1.25}
+  .instalar-top small{display:block;font-weight:500;font-size:.85rem;margin-top:2px}
+  .instalar-top .btn{background:#0b2240;color:#fff;border:0}
   .pronto{margin-top:20px;padding:22px 20px;background:var(--paper);border-left:6px solid var(--gold)}
   .pronto h3{font-weight:800;font-size:1.3rem;line-height:1.2;letter-spacing:-.02em;margin-bottom:6px}
   .pronto p{margin-bottom:14px;color:var(--slate)}
@@ -180,12 +186,17 @@
 
 <nav class="tabs" aria-label="Secciones">
   <div class="wrap" role="tablist">
-    <button class="tab" role="tab" id="tab-tasas" data-tab="tasas" aria-selected="true" type="button">Tasas</button>
-    <button class="tab" role="tab" id="tab-precios" data-tab="precios" aria-selected="false" type="button">Precios</button>
+    <button class="tab" role="tab" id="tab-tasas" data-tab="tasas" aria-selected="true" type="button"><i>💱</i>Tasas</button>
+    <button class="tab" role="tab" id="tab-calculadora" data-tab="calculadora" aria-selected="false" type="button"><i>🧮</i>Calculadora</button>
+    <button class="tab" role="tab" id="tab-precios" data-tab="precios" aria-selected="false" type="button"><i>🛒</i>Precios</button>
   </div>
 </nav>
 
 <div class="wrap">
+  <section class="instalar-top" id="instalar" hidden>
+    <p>📲 Instala nuestra app<small id="instalar-txt">Acceso directo en tu pantalla, más rápida y con avisos de tasa.</small></p>
+    <button class="btn" id="instalar-btn" type="button">Instalar</button>
+  </section>
   <section class="vt tasas" aria-label="Tasas de hoy">
     <article class="rate-hero">
       <h2 class="rate-lab">Dólar oficial BCV</h2>
@@ -211,7 +222,7 @@
   </section>
 
 
-  <section class="vt calc" aria-label="Calculadora de divisas">
+  <section class="vc calc" aria-label="Calculadora de divisas">
     <h2>Calculadora</h2>
     <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
     <label class="calc-lab" for="calc-monto">Monto</label>
@@ -228,11 +239,6 @@
       <button class="btn" id="push-btn" type="button" hidden>Activar notificaciones</button>
       <a class="btn" id="aviso-btn" data-track="click-aviso" href="#" target="_blank" rel="noopener">Activar aviso</a>
     </div>
-  </section>
-
-  <section class="vt aviso" id="instalar" hidden>
-    <p>📲 Instala la app<small id="instalar-txt">Ábrela desde tu pantalla de inicio, como cualquier app.</small></p>
-    <button class="btn" id="instalar-btn" type="button">Instalar</button>
   </section>
 
   <section class="vt comunidad" id="comunidad" hidden>
@@ -558,21 +564,22 @@ const usoCalc = k => { if (!_calcUsada){ _calcUsada = true; track('calc-usada');
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 let _instalar = null;
-function mostrarInstalar(txt, boton){
-  $('#instalar-txt').textContent = txt;
-  $('#instalar-btn').hidden = !boton;
-  $('#instalar').hidden = false;
-}
 if (esApp){ track('abierta-como-app'); }
 else {
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _instalar = e; mostrarInstalar('Ábrela desde tu pantalla de inicio, como cualquier app.', true); });
-  if (esIOS) mostrarInstalar('En iPhone: toca el botón Compartir y luego "Agregar a pantalla de inicio".', false);
+  $('#instalar').hidden = false;
+  if (esIOS) $('#instalar-btn').textContent = 'Cómo instalar';
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _instalar = e; });
   $('#instalar-btn').addEventListener('click', async () => {
     track('click-instalar');
-    if (!_instalar) return;
-    _instalar.prompt();
-    try { await _instalar.userChoice; } catch(e){}
-    _instalar = null; $('#instalar').hidden = true;
+    if (_instalar){
+      _instalar.prompt();
+      try { await _instalar.userChoice; } catch(e){}
+      _instalar = null;
+      return;
+    }
+    $('#instalar-txt').textContent = esIOS
+      ? 'Toca el botón Compartir (el cuadrado con la flecha) y luego "Agregar a pantalla de inicio".'
+      : 'Abre el menú ⋮ de tu navegador y toca "Instalar app" o "Agregar a pantalla de inicio".';
   });
   window.addEventListener('appinstalled', () => { track('app-instalada'); $('#instalar').hidden = true; });
 }
@@ -580,7 +587,7 @@ if ('serviceWorker' in navigator && !CONFIG.ONESIGNAL_APP_ID){ window.addEventLi
 
 /* ---------- pestañas ---------- */
 function irTab(t, guardar){
-  if (t !== 'tasas' && t !== 'precios') t = 'tasas';
+  if (!['tasas', 'calculadora', 'precios'].includes(t)) t = 'tasas';
   document.body.dataset.tab = t;
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   if (guardar){ try { history.replaceState(null, '', t === 'tasas' ? location.pathname + location.search : '#' + t); } catch(e){} track('tab-' + t); }
