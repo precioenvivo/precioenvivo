@@ -6,7 +6,13 @@
 <title>Tasas del día y precios | Precio en Vivo</title>
 <meta name="description" content="Dólar BCV, euro BCV y promedio USDT de hoy, y precios de la canasta básica por ciudad y supermercado reportados por la comunidad.">
 <meta name="theme-color" content="#0b2240">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%230b2240'/%3E%3Ctext x='16' y='24' font-size='22' font-weight='800' text-anchor='middle' fill='%23c9a24b' font-family='Arial,sans-serif'%3E$%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tasas del Día">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -84,6 +90,7 @@
   .aviso p{font-weight:600}
   .aviso small{display:block;font-weight:400;color:#c7d2e3}
   .aviso .btn{background:var(--gold);color:#0b2240}
+  .aviso .btn{border:0}
   /* Botones y comunidad */
   .btn{display:inline-block;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;background:var(--btn-bg);color:var(--btn-ink);border:0;border-radius:3px;padding:12px 20px;min-height:46px}
   .btns{display:flex;flex-wrap:wrap;gap:10px}
@@ -196,7 +203,12 @@
 
   <section class="aviso" id="aviso" hidden>
     <p>🔔 Avísame cuando cambie la tasa<small>Te llega un mensaje a Telegram cada vez que el BCV actualiza el dólar o el euro.</small></p>
-    <a class="btn" id="aviso-btn" href="#" target="_blank" rel="noopener">Activar aviso</a>
+    <a class="btn" id="aviso-btn" data-track="click-aviso" href="#" target="_blank" rel="noopener">Activar aviso</a>
+  </section>
+
+  <section class="aviso" id="instalar" hidden>
+    <p>📲 Instala la app<small id="instalar-txt">Ábrela desde tu pantalla de inicio, como cualquier app.</small></p>
+    <button class="btn" id="instalar-btn" type="button">Instalar</button>
   </section>
 
   <section class="comunidad" id="comunidad" hidden>
@@ -221,7 +233,7 @@
   <section class="ayuda" id="ayuda" hidden>
     <h2>Ayúdanos a conocer los precios reales</h2>
     <p>Reporta lo que pagaste hoy en el súper. Toma menos de un minuto.</p>
-    <a class="btn" id="ayuda-btn" href="#" target="_blank" rel="noopener">Reportar un precio</a>
+    <a class="btn" id="ayuda-btn" data-track="click-reportar" href="#" target="_blank" rel="noopener">Reportar un precio</a>
   </section>
 
   <footer>
@@ -244,6 +256,7 @@ const CONFIG = {
   EUROS_URL: 'https://ve.dolarapi.com/v1/euros',
   FORM_URL: 'https://tinyurl.com/tasasdeldia',          // formulario para reportar precios
   TELEGRAM_URL: 'https://t.me/tasasdeldia',             // canal de Telegram ('' para ocultar el botón)
+  GOATCOUNTER: '',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
   WHATSAPP_URL: 'https://whatsapp.com/channel/0029Vb8wo0zATRSjVTGClb3M',                                   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
 /* ========================================================= */
@@ -483,10 +496,56 @@ function calcular(){
   });
   res.innerHTML = filas.join('');
 }
-$('#calc-src').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; cSrc = b.dataset.k; store.set('calc_src', cSrc); cIn.value = cSrc === 'bs' ? '1.000' : '100'; renderCalc(); });
-$('#calc-quick').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (!b) return; cIn.value = new Intl.NumberFormat('es-VE').format(+b.dataset.q); calcular(); });
-cIn.addEventListener('input', calcular);
+$('#calc-src').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; cSrc = b.dataset.k; store.set('calc_src', cSrc); usoCalc(cSrc); cIn.value = cSrc === 'bs' ? '1.000' : '100'; renderCalc(); });
+$('#calc-quick').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (!b) return; cIn.value = new Intl.NumberFormat('es-VE').format(+b.dataset.q); usoCalc(); calcular(); });
+cIn.addEventListener('input', () => { usoCalc(); calcular(); });
 cIn.addEventListener('focus', () => cIn.select());
+
+/* ---------- estadísticas (GoatCounter, sin cookies) ---------- */
+const _cola = []; let _gcListo = false;
+function track(nombre){
+  if (!CONFIG.GOATCOUNTER) return;
+  try {
+    if (_gcListo && window.goatcounter && window.goatcounter.count) window.goatcounter.count({path: nombre, title: nombre, event: true});
+    else _cola.push(nombre);
+  } catch(e){}
+}
+if (CONFIG.GOATCOUNTER){
+  try {
+    const sc = document.createElement('script');
+    sc.async = true; sc.src = 'https://gc.zgo.at/count.js';
+    sc.dataset.goatcounter = 'https://' + CONFIG.GOATCOUNTER + '.goatcounter.com/count';
+    sc.onload = () => { _gcListo = true; _cola.splice(0).forEach(track); };
+    document.head.appendChild(sc);
+  } catch(e){}
+}
+document.addEventListener('click', e => { const a = e.target.closest('[data-track]'); if (a) track(a.dataset.track); });
+let _calcUsada = false;
+const usoCalc = k => { if (!_calcUsada){ _calcUsada = true; track('calc-usada'); } if (k) track('calc-moneda-' + k); };
+
+/* ---------- instalar como app ---------- */
+const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+let _instalar = null;
+function mostrarInstalar(txt, boton){
+  $('#instalar-txt').textContent = txt;
+  $('#instalar-btn').hidden = !boton;
+  $('#instalar').hidden = false;
+}
+if (esApp){ track('abierta-como-app'); }
+else {
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _instalar = e; mostrarInstalar('Ábrela desde tu pantalla de inicio, como cualquier app.', true); });
+  if (esIOS) mostrarInstalar('En iPhone: toca el botón Compartir y luego "Agregar a pantalla de inicio".', false);
+  $('#instalar-btn').addEventListener('click', async () => {
+    track('click-instalar');
+    if (!_instalar) return;
+    _instalar.prompt();
+    try { await _instalar.userChoice; } catch(e){}
+    _instalar = null; $('#instalar').hidden = true;
+  });
+  window.addEventListener('appinstalled', () => { track('app-instalada'); $('#instalar').hidden = true; });
+}
+if ('serviceWorker' in navigator){ window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
 
 /* ---------- refrescar tasas ---------- */
 const pickRate = (res, fuente) => {
@@ -551,8 +610,8 @@ document.title = 'Tasas del día y precios | ' + CONFIG.NOMBRE;
 $('#cuenta').textContent = CONFIG.CUENTA;
 $('#lema').textContent = CONFIG.LEMA;
 const _com = [];
-if (CONFIG.TELEGRAM_URL) _com.push('<a class="btn" href="' + esc(CONFIG.TELEGRAM_URL) + '" target="_blank" rel="noopener">Canal de Telegram</a>');
-if (CONFIG.WHATSAPP_URL) _com.push('<a class="btn" href="' + esc(CONFIG.WHATSAPP_URL) + '" target="_blank" rel="noopener">Canal de WhatsApp</a>');
+if (CONFIG.TELEGRAM_URL) _com.push('<a class="btn" data-track="click-telegram" href="' + esc(CONFIG.TELEGRAM_URL) + '" target="_blank" rel="noopener">Canal de Telegram</a>');
+if (CONFIG.WHATSAPP_URL) _com.push('<a class="btn" data-track="click-whatsapp" href="' + esc(CONFIG.WHATSAPP_URL) + '" target="_blank" rel="noopener">Canal de WhatsApp</a>');
 if (_com.length){ $('#comunidad-btns').innerHTML = _com.join(''); $('#comunidad').hidden = false; }
 if (CONFIG.TELEGRAM_URL){ $('#aviso-btn').href = CONFIG.TELEGRAM_URL; $('#aviso').hidden = false; }
 if (CONFIG.FORM_URL){ $('#ayuda-btn').href = CONFIG.FORM_URL; $('#ayuda').hidden = false; }
