@@ -641,6 +641,12 @@ function setupPush(){
     try { ok = OS.Notifications.isPushSupported(); perm = OS.Notifications.permission === true; } catch(e){}
     if (!ok){ btn.hidden = true; return; }
     btn.hidden = false;
+    let nativo = ''; try { nativo = Notification.permission; } catch(e){}
+    if (nativo === 'denied'){
+      btn.textContent = 'Notificaciones bloqueadas'; btn.disabled = false;
+      txt.textContent = 'Tu navegador tiene las notificaciones bloqueadas para este sitio. Toca el icono a la izquierda de la dirección, entra a Permisos y activa Notificaciones. Luego recarga la página.';
+      return;
+    }
     if (perm){ btn.textContent = '✅ Notificaciones activas'; btn.disabled = true; txt.textContent = 'Listo: te avisaremos en este dispositivo cuando el BCV cambie la tasa.'; }
     else { btn.textContent = 'Activar notificaciones'; btn.disabled = false; txt.textContent = 'Recibe una notificación en tu teléfono cuando el BCV cambie el dólar o el euro. También puedes seguirlo por Telegram.'; $('#aviso-btn').textContent = 'Por Telegram'; $('#aviso-btn').classList.add('ghost'); }
   };
