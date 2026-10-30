@@ -91,6 +91,9 @@
   .aviso small{display:block;font-weight:400;color:#c7d2e3}
   .aviso .btn{background:var(--gold);color:#0b2240}
   .aviso .btn{border:0}
+  .aviso .btns{display:flex;flex-wrap:wrap;gap:10px}
+  .aviso .btn.ghost{background:transparent;color:#fff;border:2px solid #7f95b5;padding:10px 18px}
+  .aviso .btn[disabled]{opacity:.85;cursor:default}
 
   [hidden]{display:none !important}
   .tabs{background:var(--navy);border-top:1px solid #1f4378}
@@ -220,8 +223,11 @@
   </section>
 
   <section class="vt aviso" id="aviso" hidden>
-    <p>🔔 Avísame cuando cambie la tasa<small>Te llega un mensaje a Telegram cada vez que el BCV actualiza el dólar o el euro.</small></p>
-    <a class="btn" id="aviso-btn" data-track="click-aviso" href="#" target="_blank" rel="noopener">Activar aviso</a>
+    <p>🔔 Avísame cuando cambie la tasa<small id="aviso-txt">Te llega un mensaje a Telegram cada vez que el BCV actualiza el dólar o el euro.</small></p>
+    <div class="btns">
+      <button class="btn" id="push-btn" type="button" hidden>Activar notificaciones</button>
+      <a class="btn" id="aviso-btn" data-track="click-aviso" href="#" target="_blank" rel="noopener">Activar aviso</a>
+    </div>
   </section>
 
   <section class="vt aviso" id="instalar" hidden>
@@ -280,6 +286,7 @@ const CONFIG = {
   FORM_URL: 'https://tinyurl.com/tasasdeldia',          // formulario para reportar precios
   TELEGRAM_URL: 'https://t.me/tasasdeldia',             // canal de Telegram ('' para ocultar el botón)
   PRECIOS_ACTIVOS: false,   // pon true cuando haya reportes reales para mostrar los precios por ciudad
+  ONESIGNAL_APP_ID: '328f28cf-5331-4002-94fc-b19935e7bcfd',   // notificaciones push (OneSignal); vacío = desactivado
   GOATCOUNTER: '',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
   WHATSAPP_URL: 'https://whatsapp.com/channel/0029Vb8wo0zATRSjVTGClb3M',                                   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
@@ -569,7 +576,7 @@ else {
   });
   window.addEventListener('appinstalled', () => { track('app-instalada'); $('#instalar').hidden = true; });
 }
-if ('serviceWorker' in navigator){ window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
+if ('serviceWorker' in navigator && !CONFIG.ONESIGNAL_APP_ID){ window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
 
 /* ---------- pestañas ---------- */
 function irTab(t, guardar){
@@ -586,6 +593,46 @@ if (CONFIG.PRECIOS_ACTIVOS === false){
   document.querySelector('#sec-precios .sec').textContent = 'Precios del súper'; $('#lema').hidden = true;
   if (CONFIG.FORM_URL) $('#pronto-btn').href = CONFIG.FORM_URL; else $('#pronto-btn').hidden = true;
 }
+
+/* ---------- notificaciones push (OneSignal) ---------- */
+function setupPush(){
+  if (!CONFIG.ONESIGNAL_APP_ID) return;
+  const btn = $('#push-btn'), txt = $('#aviso-txt');
+  let OS = null;
+  const refrescar = () => {
+    if (!OS) return;
+    let ok = false, perm = false;
+    try { ok = OS.Notifications.isPushSupported(); perm = OS.Notifications.permission === true; } catch(e){}
+    if (!ok){ btn.hidden = true; return; }
+    btn.hidden = false;
+    if (perm){ btn.textContent = '✅ Notificaciones activas'; btn.disabled = true; txt.textContent = 'Listo: te avisaremos en este dispositivo cuando el BCV cambie la tasa.'; }
+    else { btn.textContent = 'Activar notificaciones'; btn.disabled = false; txt.textContent = 'Recibe una notificación en tu teléfono cuando el BCV cambie el dólar o el euro. También puedes seguirlo por Telegram.'; $('#aviso-btn').textContent = 'Por Telegram'; $('#aviso-btn').classList.add('ghost'); }
+  };
+  btn.addEventListener('click', async () => {
+    track('click-push');
+    try { if (OS) await OS.Notifications.requestPermission(); } catch(e){ diag('Notificaciones: ' + e.message); }
+    refrescar();
+  });
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async function(OneSignal){
+    try {
+      const base = new URL('./', location.href).pathname;
+      await OneSignal.init({
+        appId: CONFIG.ONESIGNAL_APP_ID,
+        serviceWorkerPath: new URL('sw.js', location.href).pathname.replace(/^\//, ''),
+        serviceWorkerParam: { scope: base },
+        allowLocalhostAsSecureOrigin: true
+      });
+      OS = OneSignal;
+      try { OneSignal.Notifications.addEventListener('permissionChange', () => { track('push-permiso'); refrescar(); }); } catch(e){}
+      refrescar();
+    } catch(e){ diag('OneSignal: ' + e.message); }
+  });
+  const sc = document.createElement('script');
+  sc.defer = true; sc.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+  document.head.appendChild(sc);
+}
+setupPush();
 
 /* ---------- refrescar tasas ---------- */
 const pickRate = (res, fuente) => {
