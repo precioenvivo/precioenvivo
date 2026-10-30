@@ -91,6 +91,17 @@
   .aviso small{display:block;font-weight:400;color:#c7d2e3}
   .aviso .btn{background:var(--gold);color:#0b2240}
   .aviso .btn{border:0}
+
+  [hidden]{display:none !important}
+  .tabs{background:var(--navy);border-top:1px solid #1f4378}
+  .tabs .wrap{display:flex;gap:6px;padding-top:0;padding-bottom:0}
+  .tab{font:inherit;font-weight:600;color:#c7d2e3;background:transparent;border:0;border-bottom:4px solid transparent;padding:12px 18px 10px;min-height:48px;cursor:pointer}
+  .tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold)}
+  body[data-tab="tasas"] .vp{display:none}
+  body[data-tab="precios"] .vt{display:none}
+  .pronto{margin-top:20px;padding:22px 20px;background:var(--paper);border-left:6px solid var(--gold)}
+  .pronto h3{font-weight:800;font-size:1.3rem;line-height:1.2;letter-spacing:-.02em;margin-bottom:6px}
+  .pronto p{margin-bottom:14px;color:var(--slate)}
   /* Botones y comunidad */
   .btn{display:inline-block;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;background:var(--btn-bg);color:var(--btn-ink);border:0;border-radius:3px;padding:12px 20px;min-height:46px}
   .btns{display:flex;flex-wrap:wrap;gap:10px}
@@ -164,8 +175,15 @@
   </div>
 </header>
 
+<nav class="tabs" aria-label="Secciones">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" id="tab-tasas" data-tab="tasas" aria-selected="true" type="button">Tasas</button>
+    <button class="tab" role="tab" id="tab-precios" data-tab="precios" aria-selected="false" type="button">Precios</button>
+  </div>
+</nav>
+
 <div class="wrap">
-  <section class="tasas" aria-label="Tasas de hoy">
+  <section class="vt tasas" aria-label="Tasas de hoy">
     <article class="rate-hero">
       <h2 class="rate-lab">Dólar oficial BCV</h2>
       <p class="rate-val" id="v-usd"><span class="bs">Bs</span><span class="n">…</span></p>
@@ -190,7 +208,7 @@
   </section>
 
 
-  <section class="calc" aria-label="Calculadora de divisas">
+  <section class="vt calc" aria-label="Calculadora de divisas">
     <h2>Calculadora</h2>
     <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
     <label class="calc-lab" for="calc-monto">Monto</label>
@@ -201,31 +219,36 @@
     <p class="calc-foot" id="calc-foot">Las tasas se actualizan solas cada 5 minutos.</p>
   </section>
 
-  <section class="aviso" id="aviso" hidden>
+  <section class="vt aviso" id="aviso" hidden>
     <p>🔔 Avísame cuando cambie la tasa<small>Te llega un mensaje a Telegram cada vez que el BCV actualiza el dólar o el euro.</small></p>
     <a class="btn" id="aviso-btn" data-track="click-aviso" href="#" target="_blank" rel="noopener">Activar aviso</a>
   </section>
 
-  <section class="aviso" id="instalar" hidden>
+  <section class="vt aviso" id="instalar" hidden>
     <p>📲 Instala la app<small id="instalar-txt">Ábrela desde tu pantalla de inicio, como cualquier app.</small></p>
     <button class="btn" id="instalar-btn" type="button">Instalar</button>
   </section>
 
-  <section class="comunidad" id="comunidad" hidden>
+  <section class="vt comunidad" id="comunidad" hidden>
     <p>Recibe la tasa cada mañana en tu celular<small>Únete al canal y te llega sola, sin abrir Instagram.</small></p>
     <div class="btns" id="comunidad-btns"></div>
   </section>
 
-  <section class="precios" aria-label="Precios por ciudad">
+  <section class="vp precios" id="sec-precios" aria-label="Precios por ciudad">
     <h2 class="sec">Precios en tu ciudad</h2>
     <p class="sub" id="lema">Lo que la gente pagó hoy</p>
-    <div class="ciudad">
+    <div class="pronto" id="pronto" hidden>
+      <h3>Pronto: precios reportados por la gente</h3>
+      <p>Estamos recopilando reportes de supermercados de todo el país. Cuando haya suficientes, aquí verás el precio promedio de cada producto.</p>
+      <a class="btn" id="pronto-btn" data-track="click-reportar" href="#" target="_blank" rel="noopener">Reportar un precio</a>
+    </div>
+    <div class="ciudad" id="precios-ciudad">
       <label for="ciudad-input">Tu ciudad</label>
       <input id="ciudad-input" list="ciudades" autocomplete="off" placeholder="Escribe tu ciudad">
       <datalist id="ciudades"></datalist>
       <div class="chips" id="chips" role="group" aria-label="Ciudades con precios"></div>
     </div>
-    <main id="resultados" aria-live="polite">
+    <main id="resultados" class="vivo" aria-live="polite">
       <noscript><div class="state"><h2>Activa JavaScript</h2><p>Esta página necesita JavaScript para mostrar los precios.</p></div></noscript>
     </main>
   </section>
@@ -256,6 +279,7 @@ const CONFIG = {
   EUROS_URL: 'https://ve.dolarapi.com/v1/euros',
   FORM_URL: 'https://tinyurl.com/tasasdeldia',          // formulario para reportar precios
   TELEGRAM_URL: 'https://t.me/tasasdeldia',             // canal de Telegram ('' para ocultar el botón)
+  PRECIOS_ACTIVOS: false,   // pon true cuando haya reportes reales para mostrar los precios por ciudad
   GOATCOUNTER: '',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
   WHATSAPP_URL: 'https://whatsapp.com/channel/0029Vb8wo0zATRSjVTGClb3M',                                   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
@@ -547,6 +571,22 @@ else {
 }
 if ('serviceWorker' in navigator){ window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
 
+/* ---------- pestañas ---------- */
+function irTab(t, guardar){
+  if (t !== 'tasas' && t !== 'precios') t = 'tasas';
+  document.body.dataset.tab = t;
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  if (guardar){ try { history.replaceState(null, '', t === 'tasas' ? location.pathname + location.search : '#' + t); } catch(e){} track('tab-' + t); }
+  window.scrollTo(0, 0);
+}
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) irTab(b.dataset.tab, true); });
+window.addEventListener('hashchange', () => irTab(location.hash.replace('#', ''), false));
+if (CONFIG.PRECIOS_ACTIVOS === false){
+  $('#pronto').hidden = false; $('#precios-ciudad').hidden = true; $('#resultados').hidden = true;
+  document.querySelector('#sec-precios .sec').textContent = 'Precios del súper'; $('#lema').hidden = true;
+  if (CONFIG.FORM_URL) $('#pronto-btn').href = CONFIG.FORM_URL; else $('#pronto-btn').hidden = true;
+}
+
 /* ---------- refrescar tasas ---------- */
 const pickRate = (res, fuente) => {
   if (!res || res.status !== 'fulfilled') return null;
@@ -617,6 +657,8 @@ if (CONFIG.TELEGRAM_URL){ $('#aviso-btn').href = CONFIG.TELEGRAM_URL; $('#aviso'
 if (CONFIG.FORM_URL){ $('#ayuda-btn').href = CONFIG.FORM_URL; $('#ayuda').hidden = false; }
 
 renderTasas();
+
+irTab(location.hash.replace('#', ''), false);
 
 init();
 })();
