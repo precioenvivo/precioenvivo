@@ -305,6 +305,8 @@
   .scan-nom::placeholder{color:#a3b4cb}
   .scan-carro{margin-top:10px;font-size:.9rem;font-weight:700;color:#ffd978;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .scan-acc #scan-add{background:#2fa36b;color:#fff;font-weight:800;border:0;min-height:48px;border-radius:12px;padding:0 16px;font-size:1rem}
+  .carro-comp{display:flex;gap:8px;align-items:flex-start;margin:10px 0 4px;font-size:.78rem;color:var(--slate);line-height:1.35}
+  .carro-comp input{width:20px;height:20px;flex:none;margin:1px 0 0}
   .carro-li{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
   .carro-li li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
   .carro-li .cn{flex:1 1 140px;min-width:0;font-weight:600;overflow-wrap:anywhere}
@@ -468,6 +470,7 @@
     <h2>🛍️ Mi carrito</h2>
     <p class="sub">Escanea los precios mientras compras y se van sumando aquí. Se guarda solo en tu teléfono.</p>
     <button type="button" class="btn scan-btn" id="carro-scan">📷 Escanear producto</button>
+    <label class="carro-comp"><input type="checkbox" id="carro-comp" checked> <span>Compartir los precios que agregues, de forma anónima (solo producto y precio, sin tus datos). Ayuda a armar la lista de precios de referencia del país.</span></label>
     <p class="calc-foot" id="carro-vacio">Tu carrito está vacío. Escanea un precio o agrégalo a mano abajo.</p>
     <ul class="carro-li" id="carro-li"></ul>
     <ul class="carro-tot" id="carro-tot"></ul>
@@ -1829,8 +1832,17 @@ $('#scan-zp').addEventListener('click', e => { e.stopPropagation(); moverZoom(1)
 let carro = [];
 try { const j = JSON.parse(store.get('carro') || '[]'); if (Array.isArray(j)) carro = j.filter(x => x && x.p > 0 && MON[x.m]).slice(0, 100).map(x => ({n: String(x.n || '').slice(0, 40), p: +x.p, m: x.m, q: Math.max(1, Math.min(99, x.q | 0 || 1))})); } catch(e){}
 const carroGuardar = () => store.set('carro', JSON.stringify(carro));
+const compOn = () => store.get('comp_precios') !== '0';
+function enviarPrecio(n, p, m){
+  try {
+    if (!compOn() || !IA_URL || !n || n.length < 2) return;
+    fetch(IA_URL.replace(/\/+$/, '') + '/guardar', {method: 'POST', headers: {'Content-Type': 'application/json'}, keepalive: true,
+      body: JSON.stringify({n, p, m, t: R.usd && R.usd.v ? R.usd.v : null})}).catch(() => {});
+  } catch(e){}
+}
 function carroAgregar(n, p, m){
   if (!(p > 0) || !MON[m]) return;
+  enviarPrecio(n, p, m);
   const ya = carro.find(x => x.n.toLowerCase() === n.toLowerCase() && x.p === p && x.m === m && n);
   if (ya) ya.q = Math.min(99, ya.q + 1); else if (carro.length < 100) carro.push({n, p, m, q: 1});
   carroGuardar(); renderCarro();
@@ -1887,6 +1899,8 @@ $('#ca-ok').addEventListener('click', () => {
   $('#ca-n').value = ''; $('#ca-p').value = ''; track('carro-manual');
 });
 renderCarro();
+$('#carro-comp').checked = compOn();
+$('#carro-comp').addEventListener('change', e => { store.set('comp_precios', e.target.checked ? '1' : '0'); track(e.target.checked ? 'comp-si' : 'comp-no'); });
 
 /* ---------- instalar como app ---------- */
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
