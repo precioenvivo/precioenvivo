@@ -241,6 +241,35 @@
   .cb-item .dv-share{margin:10px 0 0}
   #cb-pagadas{margin-top:14px}
   #cb-pagadas summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
+
+  /* Escáner de precios */
+  .scan-btn{width:100%;margin-top:12px;background:var(--gold);color:#0b2240;font-weight:800;min-height:52px;font-size:1.05rem;border:0}
+  .scan{position:fixed;inset:0;z-index:200;background:#000;color:#fff;overflow:hidden;font-family:var(--font)}
+  .scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+  .scan-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;gap:8px;padding:max(12px,env(safe-area-inset-top)) 12px 12px;z-index:3}
+  .scan-top-r{display:flex;gap:8px}
+  .scan-b{min-width:48px;height:48px;border-radius:24px;border:0;background:rgba(0,0,0,.6);color:#fff;font:700 .95rem var(--font);padding:0 16px;cursor:pointer}
+  .scan-b[aria-pressed="true"]{background:var(--gold);color:#0b2240}
+  .scan-cap{position:absolute;left:0;right:0;top:calc(17vh - 36px);text-align:center;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.8);z-index:2;margin:0}
+  .scan-box{position:absolute;left:50%;top:17vh;transform:translateX(-50%);width:min(88vw,560px);height:min(24vh,200px);border:3px solid var(--gold);border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.5);z-index:1;pointer-events:none}
+  .scan-res{position:absolute;left:0;right:0;bottom:0;max-height:58vh;overflow:auto;background:#0b2240;border-top:4px solid var(--gold);border-radius:22px 22px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));z-index:3}
+  .scan-msg{margin:4px 0 8px;font-weight:600;color:#e9eff7}
+  .scan-priv{margin:6px 0 0;color:#a3b4cb;font-size:.8rem}
+  .scan-precio{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .scan-precio span{color:#c7d2e3;font-weight:600}
+  .scan-precio b{font-size:2.5rem;font-weight:800;letter-spacing:-.03em;color:var(--gold);font-variant-numeric:tabular-nums}
+  .scan-res .chips{margin-top:8px;gap:6px}
+  .scan-res .chip{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.28);min-height:38px;padding:6px 12px;font-size:.9rem}
+  .scan-res .chip[aria-pressed="true"]{background:var(--gold);color:#0b2240;border-color:var(--gold)}
+  .scan-otros{margin-top:8px;color:#c7d2e3;font-size:.85rem;font-weight:600}
+  .scan-conv{list-style:none;margin:10px 0 0;padding:0}
+  .scan-conv li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.15);font-weight:600;color:#c7d2e3}
+  .scan-conv li:last-child{border-bottom:0}
+  .scan-conv .v{font-weight:800;font-size:1.25rem;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .scan-conv li.main .v{font-size:1.7rem;color:var(--gold)}
+  .scan-acc{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .scan-acc .btn{flex:1;min-width:150px}
+.scan-acc #scan-usar{background:var(--gold);color:#0b2240;font-weight:800;border:0;min-height:48px;border-radius:12px;padding:0 16px;font-size:1rem}
 </style>
 </head>
 <body>
@@ -308,6 +337,7 @@
     <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
     <label class="calc-lab" for="calc-monto">Monto</label>
     <div class="calc-in"><span id="calc-sim">$</span><input id="calc-monto" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="calc-foot"></div>
+    <button type="button" class="btn scan-btn" id="scan-open">📷 Escanear un precio</button>
     <div class="calc-quick" id="calc-quick" role="group" aria-label="Montos rápidos"></div>
     <div class="calc-src" id="calc-src" role="group" aria-label="Moneda del monto"></div>
     <ul class="calc-res" id="calc-res" aria-live="polite"></ul>
@@ -449,6 +479,21 @@
     <p>Página informativa, no oficial ni afiliada al Banco Central de Venezuela.</p>
     <p>Los precios los reportan usuarios y son referenciales. Los bolívares se calculan con la tasa BCV de hoy. El promedio USDT corresponde al mercado paralelo.</p>
   </footer>
+</div>
+
+<div class="scan" id="scan" role="dialog" aria-modal="true" aria-label="Escanear un precio" hidden>
+  <video id="scan-video" playsinline muted autoplay></video>
+  <div class="scan-top">
+    <button type="button" class="scan-b" id="scan-cerrar" aria-label="Cerrar el escáner">✕ Cerrar</button>
+    <div class="scan-top-r">
+      <button type="button" class="scan-b" id="scan-luz" aria-pressed="false" hidden>🔦 Luz</button>
+      <button type="button" class="scan-b" id="scan-foto">🖼 Elegir foto</button>
+    </div>
+  </div>
+  <p class="scan-cap">Encuadra solo el precio</p>
+  <div class="scan-box" id="scan-box"></div>
+  <div class="scan-res" id="scan-res" aria-live="polite"></div>
+  <input type="file" id="scan-file" accept="image/*" hidden>
 </div>
 
 <script>
@@ -1141,6 +1186,212 @@ function buildDividir(){
 }
 buildDividir();
 
+
+/* ---------- escáner de precios (cámara + lectura en el teléfono) ---------- */
+const TESS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js';
+const scanEl = $('#scan'), scanVideo = $('#scan-video'), scanBox = $('#scan-box'), scanRes = $('#scan-res');
+let scanStream = null, scanId = 0, scanTimer = null, scanWorker = null, scanLib = null, scanCanvas = null;
+let scanCur = null, scanReads = [], scanFrozen = false, scanMsg = '', scanLeido = false, scanLimite = 0, scanClave = '', scanLuzOn = false;
+let scanSrc = (store.get('scan_src') && MON[store.get('scan_src')]) ? store.get('scan_src') : 'usd';
+
+function cargarLector(){
+  if (scanWorker) return Promise.resolve(scanWorker);
+  if (scanLib) return scanLib;
+  scanLib = new Promise((res, rej) => {
+    const go = async () => {
+      try {
+        const w = await window.Tesseract.createWorker('eng');
+        await w.setParameters({tessedit_char_whitelist: '0123456789.,$', tessedit_pageseg_mode: '11'});
+        scanWorker = w; res(w);
+      } catch(e){ scanLib = null; rej(e); }
+    };
+    if (window.Tesseract){ go(); return; }
+    const s = document.createElement('script');
+    s.src = TESS_URL; s.async = true; s.onload = go;
+    s.onerror = () => { scanLib = null; rej(new Error('no se pudo cargar el lector')); };
+    document.head.appendChild(s);
+  });
+  return scanLib;
+}
+
+function preparar(src, sx, sy, sw, sh, cw){
+  cw = cw || 560;
+  const ch = Math.max(60, Math.round(cw * sh / sw));
+  const cv = scanCanvas || (scanCanvas = document.createElement('canvas'));
+  cv.width = cw; cv.height = ch;
+  const g = cv.getContext('2d', {willReadFrequently: true});
+  g.drawImage(src, sx, sy, sw, sh, 0, 0, cw, ch);
+  const im = g.getImageData(0, 0, cw, ch), d = im.data, n = cw * ch, hist = new Uint32Array(256);
+  let suma = 0;
+  for (let i = 0; i < n; i++){ const y = (d[i*4] * 77 + d[i*4+1] * 150 + d[i*4+2] * 29) >> 8; d[i*4] = y; hist[y]++; suma += y; }
+  const inv = suma / n < 110;
+  let lo = 0, hi = 255, acc = 0;
+  for (let k = 0; k < 256; k++){ acc += hist[k]; if (acc >= n * 0.01){ lo = k; break; } }
+  acc = 0;
+  for (let k = 0; k < 256; k++){ acc += hist[k]; if (acc >= n * 0.99){ hi = k; break; } }
+  const rng = Math.max(hi - lo, 1);
+  for (let i = 0; i < n; i++){
+    let y = (d[i*4] - lo) * 255 / rng; y = y < 0 ? 0 : y > 255 ? 255 : y;
+    if (inv) y = 255 - y;
+    d[i*4] = d[i*4+1] = d[i*4+2] = y; d[i*4+3] = 255;
+  }
+  g.putImageData(im, 0, 0);
+  return cv;
+}
+function recortar(){
+  const vw = scanVideo.videoWidth, vh = scanVideo.videoHeight, W = scanVideo.clientWidth, H = scanVideo.clientHeight;
+  const sc = Math.max(W / vw, H / vh), ox = (vw * sc - W) / 2, oy = (vh * sc - H) / 2;
+  const b = scanBox.getBoundingClientRect(), v = scanVideo.getBoundingClientRect();
+  const sx = Math.max(0, (b.left - v.left + ox) / sc), sy = Math.max(0, (b.top - v.top + oy) / sc);
+  const sw = Math.min(vw - sx, b.width / sc), sh = Math.min(vh - sy, b.height / sc);
+  return preparar(scanVideo, sx, sy, sw, sh, 560);
+}
+
+/* elige el precio: el número con la letra más grande y más seguro, con decimales de preferencia */
+function procesarPalabras(words, directo){
+  const c = [];
+  words.forEach(w => {
+    const t = String((w && w.text) || '').trim().replace(/^[$S§]+/, '').replace(/\$/g, '');
+    const m = /^(\d{1,4})(?:[.,](\d{1,2}))?$/.exec(t);
+    if (!m) return;
+    const v = parseFloat(t.replace(',', '.'));
+    if (!(v > 0)) return;
+    const h = w.bbox ? (w.bbox.y1 - w.bbox.y0) : 10, conf = Math.max(Number(w.confidence) || 1, 1) / 100;
+    c.push({v, s: h * conf * (m[2] ? 1.25 : 1)});
+  });
+  c.sort((a, b) => b.s - a.s);
+  const alts = [];
+  c.forEach(x => { if (!alts.includes(x.v)) alts.push(x.v); });
+  if (directo){
+    scanCur = alts.length ? {v: alts[0], alts} : null;
+    scanMsg = alts.length ? '' : 'No encontramos un precio en la foto. Prueba con otra o acércate más.';
+    renderScan(true); return;
+  }
+  scanReads.push(alts.length ? {v: alts[0], alts} : null);
+  if (scanReads.length > 4) scanReads.shift();
+  const ult = scanReads.slice(-3), vals = ult.filter(Boolean).map(x => x.v);
+  const estable = vals.find(v => vals.filter(x => x === v).length >= 2);
+  if (estable !== undefined){
+    const ultimo = [...ult].reverse().find(x => x && x.v === estable);
+    scanCur = {v: estable, alts: ultimo.alts};
+    if (!scanLeido){ scanLeido = true; track('scan-lectura'); }
+  } else if (ult.length >= 3 && !ult.some(Boolean)) scanCur = null;
+  renderScan(false);
+}
+
+function convertirScan(m, src){
+  const t = {usd: R.usd && R.usd.v, euro: R.euro && R.euro.v, usdt: R.usdt && R.usdt.v};
+  const origen = src === 'bs' ? m : (t[src] ? m * t[src] : NaN);
+  if (!(origen >= 0)) return null;
+  const f = [];
+  if (src !== 'bs') f.push(['Bolívares', 'Bs ' + fmt.format(origen), true]);
+  ['usd', 'euro', 'usdt'].forEach(k => { if (k !== src && t[k]) f.push([MON[k].lab, MON[k].sim + ' ' + fmt.format(origen / t[k]), false]); });
+  return f;
+}
+function renderScan(force){
+  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
+  if (!force && clave === scanClave) return;
+  scanClave = clave;
+  if (scanMsg){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + (scanFrozen && scanCur === null && /pausa/.test(scanMsg) ? '<div class="scan-acc"><button type="button" class="btn" id="scan-seguir">▶ Seguir escaneando</button></div>' : '') + '<p class="scan-priv">La imagen se procesa en tu teléfono y no se envía a ningún servidor.</p>'; return; }
+  if (!scanCur){ scanRes.innerHTML = '<p class="scan-msg">Apunta al precio y mantén firme el teléfono…</p><p class="scan-priv">La imagen se procesa en tu teléfono y no se envía a ningún servidor.</p>'; return; }
+  const m = scanCur.v, filas = convertirScan(m, scanSrc);
+  const otros = scanCur.alts.filter(x => x !== m).slice(0, 4);
+  scanRes.innerHTML =
+    '<div class="scan-precio"><span>Precio detectado</span><b>' + esc(MON[scanSrc].sim + ' ' + fmt.format(m)) + '</b></div>' +
+    '<div class="chips" role="group" aria-label="Moneda del precio">' + Object.keys(MON).map(k => '<button type="button" class="chip" data-sk="' + k + '" aria-pressed="' + (k === scanSrc) + '">' + MON[k].nom + '</button>').join('') + '</div>' +
+    (otros.length ? '<p class="scan-otros">¿Era otro número?</p><div class="chips">' + otros.map(x => '<button type="button" class="chip" data-av="' + x + '">' + esc(fmt.format(x)) + '</button>').join('') + '</div>' : '') +
+    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="v">' + esc(f[1]) + '</span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>' +
+    '<div class="scan-acc"><button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button><button type="button" class="btn" id="scan-usar">Usar en la calculadora</button></div>';
+}
+
+async function scanTick(id){
+  if (id !== scanId) return;
+  if (Date.now() > scanLimite && !scanFrozen){ scanFrozen = true; scanMsg = 'Escáner en pausa para ahorrar batería.'; scanCur = null; renderScan(true); }
+  if (!scanFrozen && !document.hidden && scanVideo.readyState >= 2 && scanVideo.videoWidth && scanWorker){
+    try {
+      const r = await scanWorker.recognize(recortar());
+      if (id !== scanId) return;
+      if (!scanFrozen) procesarPalabras((r && r.data && r.data.words) || [], false);
+    } catch(e){ if (id !== scanId) return; }
+  }
+  scanTimer = setTimeout(() => scanTick(id), 250);
+}
+function detenerCamara(){
+  try { if (scanStream) scanStream.getTracks().forEach(t => t.stop()); } catch(e){}
+  scanStream = null; try { scanVideo.srcObject = null; } catch(e){}
+}
+function cerrarScan(){
+  if (scanEl.hidden) return;
+  scanId++; clearTimeout(scanTimer); scanTimer = null; detenerCamara();
+  scanEl.hidden = true; document.body.style.overflow = ''; scanLuzOn = false;
+}
+async function abrirScan(){
+  const id = ++scanId;
+  scanEl.hidden = false; document.body.style.overflow = 'hidden';
+  scanCur = null; scanReads = []; scanFrozen = false; scanLeido = false; scanLuzOn = false; scanClave = '';
+  $('#scan-luz').hidden = true; $('#scan-luz').setAttribute('aria-pressed', 'false');
+  scanLimite = Date.now() + 90000; scanMsg = 'Abriendo la cámara…'; renderScan(true);
+  track('scan-abrir');
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('sin cámara');
+    scanStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: 'environment'}, width: {ideal: 1280}, height: {ideal: 720}}, audio: false});
+  } catch(e){
+    if (id !== scanId) return;
+    track('scan-error-camara');
+    scanMsg = (e && e.name === 'NotAllowedError') ? 'Para escanear en vivo hay que permitir la cámara. También puedes elegir una foto.' : 'No pudimos abrir la cámara. Puedes elegir una foto.';
+    renderScan(true); return;
+  }
+  if (id !== scanId){ detenerCamara(); return; }
+  scanVideo.srcObject = scanStream;
+  try { await scanVideo.play(); } catch(e){}
+  try { const caps = scanStream.getVideoTracks()[0].getCapabilities ? scanStream.getVideoTracks()[0].getCapabilities() : {}; $('#scan-luz').hidden = !caps.torch; } catch(e){}
+  scanMsg = scanWorker ? '' : 'Cargando el lector… (solo la primera vez)'; renderScan(true);
+  try { await cargarLector(); } catch(e){
+    if (id !== scanId) return;
+    track('scan-error-lector');
+    scanMsg = 'No pudimos cargar el lector. Revisa tu conexión y vuelve a intentar.'; renderScan(true); return;
+  }
+  if (id !== scanId) return;
+  scanMsg = ''; renderScan(true);
+  scanTick(id);
+}
+
+/* --- eventos del escáner --- */
+$('#scan-open').addEventListener('click', abrirScan);
+$('#scan-cerrar').addEventListener('click', cerrarScan);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarScan(); });
+$('#scan-luz').addEventListener('click', async e => {
+  const tr = scanStream && scanStream.getVideoTracks()[0]; if (!tr) return;
+  try { await tr.applyConstraints({advanced: [{torch: !scanLuzOn}]}); scanLuzOn = !scanLuzOn; e.currentTarget.setAttribute('aria-pressed', String(scanLuzOn)); } catch(err){}
+});
+$('#scan-foto').addEventListener('click', () => $('#scan-file').click());
+$('#scan-file').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  track('scan-foto'); scanFrozen = true; scanCur = null; scanMsg = 'Leyendo la foto…'; renderScan(true);
+  const id = scanId;
+  try {
+    await cargarLector();
+    const bmp = await (window.createImageBitmap ? createImageBitmap(f) : new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(f); }));
+    const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+    const r = await scanWorker.recognize(preparar(bmp, 0, 0, w, h, 900));
+    if (id !== scanId) return;
+    procesarPalabras((r && r.data && r.data.words) || [], true);
+  } catch(err){ if (id !== scanId) return; track('scan-error-lector'); scanMsg = 'No pudimos leer la foto. Intenta con otra.'; renderScan(true); }
+});
+scanRes.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.sk){ scanSrc = t.dataset.sk; store.set('scan_src', scanSrc); renderScan(true); return; }
+  if (t.dataset.av){ scanCur = {v: parseFloat(t.dataset.av), alts: scanCur.alts}; scanFrozen = true; track('scan-otro-numero'); renderScan(true); return; }
+  if (t.id === 'scan-fijar'){ scanFrozen = !scanFrozen; if (!scanFrozen){ scanReads = []; scanLimite = Date.now() + 90000; } renderScan(true); return; }
+  if (t.id === 'scan-seguir'){ scanFrozen = false; scanMsg = ''; scanReads = []; scanLimite = Date.now() + 90000; renderScan(true); return; }
+  if (t.id === 'scan-usar' && scanCur){
+    cSrc = scanSrc; store.set('calc_src', cSrc);
+    cIn.value = String(scanCur.v).replace('.', ',');
+    renderCalc(); track('scan-usar'); cerrarScan();
+  }
+});
+
 /* ---------- instalar como app ---------- */
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
@@ -1168,6 +1419,7 @@ if ('serviceWorker' in navigator && !CONFIG.ONESIGNAL_APP_ID){ window.addEventLi
 
 /* ---------- pestañas ---------- */
 function irTab(t, guardar){
+  try { cerrarScan(); } catch(e){}
   if (!['tasas', 'calculadora', 'dividir', 'precios', 'canales'].includes(t)) t = 'tasas';
   document.body.dataset.tab = t;
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
