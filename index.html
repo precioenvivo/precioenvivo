@@ -553,7 +553,7 @@ const CONFIG = {
   PRECIOS_ACTIVOS: false,   // pon true cuando haya reportes reales para mostrar los precios por ciudad
   ONESIGNAL_APP_ID: '328f28cf-5331-4002-94fc-b19935e7bcfd',   // notificaciones push (OneSignal); vacío = desactivado
   INSTAGRAM_URL: 'https://www.instagram.com/tasa.bcv/',
-  SCAN_IA_URL: 'https://162-33-179-6.sslip.io/webhook/precio-scan',   // pega aquí el enlace (Production URL) del flujo de n8n 'Escáner de precios (Gemini)'; vacío = solo lector del teléfono
+  SCAN_IA_URL: 'https://162-33-179-6.sslip.io/leer',   // pega aquí el enlace (Production URL) del flujo de n8n 'Escáner de precios (Gemini)'; vacío = solo lector del teléfono
   GOATCOUNTER: 'diegsalazar',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
   WHATSAPP_URL: 'https://whatsapp.com/channel/0029Vb8wo0zATRSjVTGClb3M',                                   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
@@ -1241,7 +1241,7 @@ const TESS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tess
 const scanEl = $('#scan'), scanVideo = $('#scan-video'), scanBox = $('#scan-box'), scanRes = $('#scan-res');
 let scanStream = null, scanId = 0, scanTimer = null, scanWorker = null, scanLib = null, scanCanvas = null;
 let scanCur = null, scanReads = [], scanFrozen = false, scanMsg = '', scanLeido = false, scanLimite = 0, scanClave = '', scanLuzOn = false;
-const IA_URL = String(CONFIG.SCAN_IA_URL || '').trim(), IA_DIA = 80, IA_SESION = 30;
+const IA_URL = String(CONFIG.SCAN_IA_URL || '').trim(), IA_DIA = 120, IA_SESION = 30;
 let iaMotivo = '', iaFuente = '';
 function iaExplicar(e){
   const m = String((e && e.message) || e || '');
@@ -1426,7 +1426,7 @@ function renderScan(force){
   const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, iaLeyendo, iaActiva(), iaMotivo, iaFuente, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
   if (!force && clave === scanClave) return;
   scanClave = clave;
-  const priv = '<p class="scan-priv">' + (iaActiva() ? 'La foto del precio se envía a un servicio externo solo para leerlo y no se guarda.' : 'La imagen se procesa en tu teléfono y no se envía a ningún servidor.') + '</p>';
+  const priv = '<p class="scan-priv">' + (iaActiva() ? 'La foto del precio se envía a nuestro servidor solo para leerlo y se descarta enseguida. No se guarda.' : 'La imagen se procesa en tu teléfono y no se envía a ningún servidor.') + '</p>';
   const manual = '<div class="scan-man"><input id="scan-man" inputmode="decimal" autocomplete="off" placeholder="¿No es ninguno? Escríbelo"><button type="button" class="chip" id="scan-man-ok">Listo</button></div>';
   if (scanFase === 'recorte'){
     scanRes.innerHTML = '<p class="scan-msg">Toca la foto o arrastra el recuadro dorado para ponerlo <b>solo sobre el precio</b>. Si hace falta, agrándalo desde la esquina.</p><div class="scan-acc"><button type="button" class="btn" id="scan-leer">🔍 Leer el precio</button></div>' + priv; return;
