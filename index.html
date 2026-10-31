@@ -365,16 +365,12 @@
     <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
     <label class="calc-lab" for="calc-monto">Monto</label>
     <div class="calc-in"><span id="calc-sim">$</span><input id="calc-monto" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="calc-foot"></div>
+    <button type="button" class="btn scan-btn" id="scan-open">📷 Escáner en vivo</button>
     <p class="calc-lab calc-lab2" id="calc-src-lab">Ese monto está en:</p>
     <div class="calc-src calc-src4" id="calc-src" role="group" aria-labelledby="calc-src-lab"></div>
     <div class="calc-quick" id="calc-quick" role="group" aria-label="Montos rápidos"></div>
     <p class="calc-lab calc-lab2">Equivale a:</p>
     <ul class="calc-res" id="calc-res" aria-live="polite"></ul>
-    <p class="calc-lab calc-lab2 calc-scan-t">¿El precio está en una etiqueta?</p>
-    <div class="calc-scan">
-      <button type="button" class="btn scan-btn" id="scan-photo-open">📸 Foto del precio</button>
-      <button type="button" class="btn scan-btn2" id="scan-open">📷 Escáner en vivo</button>
-    </div>
     <div class="dv-share">
       <button type="button" class="btn wa" id="calc-wa">Compartir por WhatsApp</button>
       <button type="button" class="chip" id="calc-tg">Telegram</button>
@@ -1665,7 +1661,6 @@ async function leerRecorte(){
   if (alts.length) track('scan-lectura');
   renderScan(true);
 }
-$('#scan-photo-open').addEventListener('click', () => $('#scan-cam').click());
 $('#scan-foto').addEventListener('click', () => $('#scan-cam').click());
 $('#scan-gal').addEventListener('click', () => $('#scan-file').click());
 ['#scan-cam', '#scan-file'].forEach(q => $(q).addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; cargarFoto(f); }));
