@@ -551,7 +551,7 @@ const CONFIG = {
   PRECIOS_ACTIVOS: false,   // pon true cuando haya reportes reales para mostrar los precios por ciudad
   ONESIGNAL_APP_ID: '328f28cf-5331-4002-94fc-b19935e7bcfd',   // notificaciones push (OneSignal); vacío = desactivado
   INSTAGRAM_URL: 'https://www.instagram.com/tasa.bcv/',
-  SCAN_IA_URL: 'https://function-distributors-tampa-mature.trycloudflare.com/webhook/precio-scan',   // pega aquí el enlace (Production URL) del flujo de n8n 'Escáner de precios (Gemini)'; vacío = solo lector del teléfono
+  SCAN_IA_URL: 'https://162-33-179-6.sslip.io/webhook/precio-scan',   // pega aquí el enlace (Production URL) del flujo de n8n 'Escáner de precios (Gemini)'; vacío = solo lector del teléfono
   GOATCOUNTER: 'diegsalazar',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
   WHATSAPP_URL: 'https://whatsapp.com/channel/0029Vb8wo0zATRSjVTGClb3M',                                   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
@@ -1240,6 +1240,15 @@ const scanEl = $('#scan'), scanVideo = $('#scan-video'), scanBox = $('#scan-box'
 let scanStream = null, scanId = 0, scanTimer = null, scanWorker = null, scanLib = null, scanCanvas = null;
 let scanCur = null, scanReads = [], scanFrozen = false, scanMsg = '', scanLeido = false, scanLimite = 0, scanClave = '', scanLuzOn = false;
 const IA_URL = String(CONFIG.SCAN_IA_URL || '').trim(), IA_DIA = 80, IA_SESION = 30;
+let iaMotivo = '', iaFuente = '';
+function iaExplicar(e){
+  const m = String((e && e.message) || e || '');
+  if (/limite/.test(m)) return 'se llegó al tope diario del flujo';
+  if (m === 'ia') return 'Gemini no respondió bien (revisa la clave o el modelo en n8n)';
+  if (/abort/i.test(m)) return 'tardó demasiado en responder';
+  if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return 'no se pudo llegar a tu n8n';
+  return m || 'error desconocido';
+}
 let iaBusy = false, iaOff = false, iaN = 0, iaFallos = 0, iaPrev = null, iaUlt = null, iaUltT = 0, iaLeyendo = false, iaCan = null;
 const iaActiva = () => !!IA_URL && !iaOff && store.get('ia_ok') === '1';
 function iaCupo(){
@@ -1411,10 +1420,11 @@ function convertirScan(m, src){
   return f;
 }
 function renderScan(force){
-  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, iaLeyendo, iaActiva(), R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
+  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, iaLeyendo, iaActiva(), iaMotivo, iaFuente, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
   if (!force && clave === scanClave) return;
   scanClave = clave;
-  const priv = '<p class="scan-priv">' + (iaActiva() ? 'La foto del precio se envía a Google (IA) solo para leerlo y no se guarda. <button type="button" class="scan-link" id="scan-ia-off">Usar solo el lector del teléfono</button>' : 'La imagen se procesa en tu teléfono y no se envía a ningún servidor.' + (IA_URL ? ' <button type="button" class="scan-link" id="scan-ia-on">Activar lectura con IA</button>' : '')) + '</p>';
+  const diag = iaMotivo ? '<br><b>⚠ La IA no respondió:</b> ' + esc(iaMotivo) + '. Se usa el lector del teléfono.' : (iaFuente === 'ia' ? '<br>✨ Leído con IA' : '');
+  const priv = '<p class="scan-priv">' + (iaActiva() ? 'La foto del precio se envía a Google (IA) solo para leerlo y no se guarda. <button type="button" class="scan-link" id="scan-ia-off">Usar solo el lector del teléfono</button>' : 'La imagen se procesa en tu teléfono y no se envía a ningún servidor.' + (IA_URL ? ' <button type="button" class="scan-link" id="scan-ia-on">Activar lectura con IA</button>' : '')) + diag + '</p>';
   if (scanFase === 'consent'){
     scanRes.innerHTML = '<p class="scan-msg"><b>✨ Lectura con IA</b><br>Es más rápida y precisa. Para leer el precio, la foto se envía a un servicio de IA de Google; no la guardamos. ¿La activamos?</p><div class="scan-acc"><button type="button" class="btn" id="scan-ia-si">✔ Sí, activar</button><button type="button" class="chip" id="scan-ia-no">Usar solo el lector del teléfono</button></div>'; return;
   }
@@ -1472,11 +1482,11 @@ async function iaTick(id){
         iaBusy = false; iaLeyendo = false;
         if (id !== scanId) return;
         if (err){
-          iaFallos++; track('scan-ia-error');
+          iaFallos++; iaMotivo = iaExplicar(err); track('scan-ia-error');
           if (iaFallos >= 2 || /limite/.test(String(err.message))){ await caerALocal(id); return; }
         } else {
           iaFallos = 0;
-          if (j && j.valor > 0){ aplicarIA(j); scanFrozen = true; track('scan-ia'); }
+          if (j && j.valor > 0){ aplicarIA(j); scanFrozen = true; iaMotivo = ''; iaFuente = 'ia'; track('scan-ia'); }
         }
         renderScan(true);
       }
@@ -1516,7 +1526,7 @@ function cerrarScan(){
 }
 async function abrirScan(){
   clearTimeout(scanTimer); detenerCamara();
-  const id = ++scanId; iaOff = false; iaBusy = false; iaLeyendo = false;
+  const id = ++scanId; iaOff = false; iaBusy = false; iaLeyendo = false; iaMotivo = ''; iaFuente = '';
   scanEl.hidden = false; document.body.style.overflow = 'hidden';
   scanCur = null; scanReads = []; scanFrozen = false; scanLeido = false; scanLuzOn = false; scanClave = '';
   scanFase = ''; scanDeVivo = false; scanEl.classList.remove('foto'); $('#scan-crop').hidden = true;
@@ -1628,8 +1638,8 @@ async function leerRecorte(){
       iaSumar();
       const j = await leerIA(marcoIA(scanBmp, x0, y0, w0, h0, 640));
       if (id !== scanId) return;
-      if (j && j.valor > 0){ aplicarIA(j); scanFase = 'resultado'; scanMsg = ''; track('scan-ia'); renderScan(true); return; }
-    } catch(e){ if (id !== scanId) return; track('scan-ia-error'); }
+      if (j && j.valor > 0){ aplicarIA(j); scanFase = 'resultado'; scanMsg = ''; iaMotivo = ''; iaFuente = 'ia'; track('scan-ia'); renderScan(true); return; }
+    } catch(e){ if (id !== scanId) return; iaMotivo = iaExplicar(e); track('scan-ia-error'); }
     scanMsg = 'Leyendo el precio…'; renderScan(true);
   }
   try { await cargarLector(); } catch(e){
