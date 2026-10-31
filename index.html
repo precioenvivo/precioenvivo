@@ -374,6 +374,14 @@
   .vc.calc .dv-share{flex-wrap:nowrap;margin:8px 0 4px}
   .vc.calc .dv-share .btn{flex:1;min-height:44px}
   .vc .calc-foot{margin:2px 0 6px}
+  .top{background:linear-gradient(135deg,#0b2240 0%,#12325c 100%);border-bottom:3px solid var(--gold)}
+  .top .wrap{padding-top:14px;padding-bottom:14px}
+  .logo{width:48px!important;height:48px!important}
+  .top h1{font-size:1.55rem;font-weight:800;letter-spacing:-.025em}
+  .fecha{display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding-left:12px;border-left:2px solid rgba(201,162,75,.6)}
+  .fecha b{color:var(--gold);font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+  .fecha{font-size:.8rem;color:#e3e9f2}
+  @media (max-width:360px){ .top h1{font-size:1.3rem} }
 </style>
 </head>
 <body>
@@ -383,7 +391,6 @@
     <div class="marca">
       <img class="logo" src="icon-192.png" width="68" height="68" alt="Logo de Tasas del Día">
       <div>
-        <p class="cuenta" id="cuenta">@tasa.bcv</p>
         <h1>Tasas del día</h1>
       </div>
     </div>
@@ -2042,7 +2049,6 @@ input.addEventListener('change', () => {
 });
 
 document.title = 'Tasas del día y precios | ' + CONFIG.NOMBRE;
-$('#cuenta').textContent = CONFIG.CUENTA;
 $('#lema').textContent = CONFIG.LEMA;
 const _canales = [];
 if (CONFIG.TELEGRAM_URL) _canales.push(['tg', 'Telegram', 'La tasa de cada mañana y un aviso cada vez que el BCV cambia el dólar o el euro. Es el canal más completo.', 'Unirme al canal', CONFIG.TELEGRAM_URL, 'click-telegram']);
