@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Precio en Vivo">
 <meta property="og:title" content="Precio en Vivo: tasas y precios del día en Venezuela">
-<meta property="og:description" content="Dólar BCV, euro, USDT, calculadora y precios del súper reportados por la gente.">
+<meta property="og:description" content="Dólar BCV, euro, USDT, calculadora, dividir cuentas, vaquita y precios del súper.">
 <meta property="og:url" content="https://precioenvivo.com/">
 <meta property="og:image" content="https://precioenvivo.com/icon-512.png">
 <meta name="twitter:card" content="summary">
@@ -110,10 +110,11 @@
   .tab i{font-style:normal;font-size:1.25rem}
   @media (min-width:600px){ .tab{font-size:1rem;flex-direction:row;justify-content:center;gap:8px} .tab i{font-size:1.2rem} }
   .tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.07)}
-  body[data-tab="tasas"] .vc, body[data-tab="tasas"] .vp, body[data-tab="tasas"] .vk{display:none}
-  body[data-tab="calculadora"] .vt, body[data-tab="calculadora"] .vp, body[data-tab="calculadora"] .vk{display:none}
-  body[data-tab="precios"] .vt, body[data-tab="precios"] .vc, body[data-tab="precios"] .vk{display:none}
-  body[data-tab="canales"] .vt, body[data-tab="canales"] .vc, body[data-tab="canales"] .vp{display:none}
+  body[data-tab="tasas"] .vc, body[data-tab="tasas"] .vd, body[data-tab="tasas"] .vp, body[data-tab="tasas"] .vk{display:none}
+  body[data-tab="calculadora"] .vt, body[data-tab="calculadora"] .vd, body[data-tab="calculadora"] .vp, body[data-tab="calculadora"] .vk{display:none}
+  body[data-tab="dividir"] .vt, body[data-tab="dividir"] .vc, body[data-tab="dividir"] .vp, body[data-tab="dividir"] .vk{display:none}
+  body[data-tab="precios"] .vt, body[data-tab="precios"] .vc, body[data-tab="precios"] .vd, body[data-tab="precios"] .vk{display:none}
+  body[data-tab="canales"] .vt, body[data-tab="canales"] .vc, body[data-tab="canales"] .vd, body[data-tab="canales"] .vp{display:none}
   .instalar-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:12px;background:var(--gold);color:#0b2240;padding:14px 16px}
   .instalar-top p{font-weight:700;line-height:1.25}
   .instalar-top small{display:block;font-weight:500;font-size:.85rem;margin-top:2px}
@@ -193,6 +194,38 @@
 
   footer{margin-top:30px;padding:18px 0 36px;border-top:1px solid var(--line);color:var(--slate);font-size:.85rem}
   footer p{margin-bottom:6px}
+
+  /* Dividir gastos y vaquita */
+  .dividir{padding-bottom:18px}
+  .dividir h2{font-weight:800;font-size:1.5rem;line-height:1.1;letter-spacing:-.025em}
+  .dv-t{margin-top:16px}
+  .dv-txt{width:100%;min-height:48px;font:inherit;padding:10px 12px;border:2px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink)}
+  .dv-fila{display:flex;gap:8px;margin-top:8px;align-items:center}
+  .dv-fila .dv-num{width:112px;flex:none}
+  .dv-x{flex:none;width:48px;min-height:48px;font:inherit;font-size:1.4rem;line-height:1;background:transparent;color:var(--slate);border:1px solid var(--line);border-radius:3px;cursor:pointer}
+  .dv-ok{flex:none;width:28px;height:28px;accent-color:var(--navy);cursor:pointer}
+  .dv-add{margin-top:10px}
+  .dv-nota{margin:12px 0 0;padding:10px 12px;background:var(--mist);border-left:4px solid var(--gold);font-size:.9rem;color:var(--ink)}
+  .dv-nota.err{border-left-color:#b3261e}
+  .calc-res .v small{display:block;font-weight:600;font-size:.8rem;color:var(--slate);letter-spacing:0}
+  .dv-cuota{display:flex;flex-direction:column;align-items:flex-start;margin-top:14px;padding:14px 16px;background:var(--navy);color:#fff}
+  .dv-cuota span{color:#c7d2e3;font-size:.9rem}
+  .dv-cuota b{font-size:2rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--gold);white-space:nowrap}
+  .dv-cuota small{color:#c7d2e3;font-weight:600}
+  .dv-bar{height:10px;background:var(--line);border-radius:5px;margin-top:12px;overflow:hidden}
+  .dv-bar div{height:100%;background:var(--good);transition:width .25s}
+  .dv-prog{margin:8px 0 0;font-weight:600}
+  .dv-pago{margin-top:18px;border:1px solid var(--line);padding:4px 14px 14px;background:var(--paper)}
+  .dv-pago summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
+  .dv-check{display:flex;gap:10px;align-items:center;margin-top:12px;font-weight:600}
+  .dv-check input{width:22px;height:22px;accent-color:var(--navy)}
+  .dv-share{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 8px}
+  .btn.wa{background:#1a7f43;color:#fff}
+  .btn[disabled],.chip[disabled]{opacity:.5;cursor:not-allowed}
+  .dv-prev{margin:6px 0 4px;padding:12px;background:var(--mist);border:1px dashed var(--line);white-space:pre-wrap;font:13px/1.45 var(--font);color:var(--slate);overflow-wrap:anywhere}
+  .share-t{margin-top:4px}
+  .share-t .calc-lab{margin:0;color:var(--slate);font-size:.9rem}
+  .share-t .calc-lab{flex-basis:100%}
 </style>
 </head>
 <body>
@@ -213,9 +246,10 @@
 <nav class="tabs" aria-label="Secciones">
   <div class="wrap" role="tablist">
     <button class="tab" role="tab" id="tab-tasas" data-tab="tasas" aria-selected="true" type="button"><i>💱</i>Tasas</button>
-    <button class="tab" role="tab" id="tab-calculadora" data-tab="calculadora" aria-selected="false" type="button"><i>🧮</i>Calculadora</button>
-    <button class="tab" role="tab" id="tab-precios" data-tab="precios" aria-selected="false" type="button"><i>🛒</i>Precios</button>
+    <button class="tab" role="tab" id="tab-calculadora" data-tab="calculadora" aria-selected="false" type="button"><i>🧮</i>Calcular</button>
+    <button class="tab" role="tab" id="tab-dividir" data-tab="dividir" aria-selected="false" type="button"><i>🐄</i>Dividir</button>
     <button class="tab" role="tab" id="tab-canales" data-tab="canales" aria-selected="false" type="button"><i>📣</i>Canales</button>
+    <button class="tab" role="tab" id="tab-precios" data-tab="precios" aria-selected="false" type="button"><i>🛒</i>Precios</button>
   </div>
 </nav>
 
@@ -246,6 +280,11 @@
       <div><b>Brecha USDT frente al dólar BCV</b><span id="brecha-txt"></span></div>
       <strong id="brecha-n"></strong>
     </div>
+    <div class="share-t dv-share" id="tasas-share">
+      <p class="calc-lab">📤 Comparte la tasa de hoy</p>
+      <button type="button" class="btn wa" id="tasas-wa">WhatsApp</button>
+      <button type="button" class="chip" id="tasas-tg">Telegram</button>
+    </div>
   </section>
 
 
@@ -257,7 +296,75 @@
     <div class="calc-quick" id="calc-quick" role="group" aria-label="Montos rápidos"></div>
     <div class="calc-src" id="calc-src" role="group" aria-label="Moneda del monto"></div>
     <ul class="calc-res" id="calc-res" aria-live="polite"></ul>
+    <div class="dv-share">
+      <button type="button" class="btn wa" id="calc-wa">Compartir por WhatsApp</button>
+      <button type="button" class="chip" id="calc-tg">Telegram</button>
+    </div>
     <p class="calc-foot" id="calc-foot">Las tasas se actualizan solas cada 5 minutos.</p>
+  </section>
+
+  <section class="vd calc dividir" id="sec-dividir" aria-label="Dividir gastos y vaquita">
+    <h2>Dividir gastos</h2>
+    <p class="sub">Reparte una cuenta o arma una vaquita, con cada monto en dólares y en bolívares.</p>
+    <div class="chips" id="dv-modo" role="group" aria-label="Qué quieres hacer">
+      <button type="button" class="chip" data-m="cuenta" aria-pressed="true">🧾 Dividir cuenta</button>
+      <button type="button" class="chip" data-m="vaquita" aria-pressed="false">🐄 Vaquita</button>
+    </div>
+
+    <div id="dv-cuenta">
+      <label class="calc-lab dv-t" for="dc-concepto">¿Qué es? (opcional)</label>
+      <input class="dv-txt" id="dc-concepto" type="text" maxlength="40" placeholder="Almuerzo, cena, cumpleaños…" autocomplete="off">
+      <label class="calc-lab dv-t" for="dc-monto">Total de la cuenta</label>
+      <div class="calc-in"><span id="dc-sim">$</span><input id="dc-monto" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></div>
+      <div class="calc-src" id="dc-src" role="group" aria-label="Moneda del total"></div>
+      <p class="calc-lab dv-t">¿Entre quiénes?</p>
+      <div id="dc-pers"></div>
+      <button type="button" class="chip dv-add" id="dc-add">+ Agregar persona</button>
+      <p class="calc-lab dv-t">¿Cómo se reparte?</p>
+      <div class="chips" id="dc-rep" role="group" aria-label="Forma de repartir"></div>
+      <p class="calc-foot" id="dc-ayuda"></p>
+      <p class="calc-lab dv-t">Propina (opcional)</p>
+      <div class="chips" id="dc-prop" role="group" aria-label="Propina"></div>
+      <ul class="calc-res" id="dc-res" aria-live="polite"></ul>
+      <p class="dv-nota" id="dc-nota" hidden></p>
+    </div>
+
+    <div id="dv-vaq" hidden>
+      <label class="calc-lab dv-t" for="dq-concepto">¿Qué van a comprar?</label>
+      <input class="dv-txt" id="dq-concepto" type="text" maxlength="40" placeholder="Botella de whisky, regalo, paseo…" autocomplete="off">
+      <label class="calc-lab dv-t" for="dq-monto">¿Cuánto cuesta en total?</label>
+      <div class="calc-in"><span id="dq-sim">$</span><input id="dq-monto" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></div>
+      <div class="calc-src" id="dq-src" role="group" aria-label="Moneda del total"></div>
+      <p class="calc-lab dv-t">¿Quiénes ponen? Marca a los que ya pagaron</p>
+      <div id="dq-pers"></div>
+      <button type="button" class="chip dv-add" id="dq-add">+ Agregar persona</button>
+      <div id="dq-res" aria-live="polite"></div>
+      <p class="dv-nota" id="dq-nota" hidden></p>
+      <p class="calc-foot">Tu vaquita queda guardada en este teléfono para que vayas marcando quién paga.</p>
+      <button type="button" class="chip" id="dq-nueva">Empezar otra vaquita</button>
+    </div>
+
+    <details class="dv-pago" id="dv-pago">
+      <summary>💳 Agregar mis datos de pago (opcional)</summary>
+      <p class="calc-foot">Para que te paguen directo por pago móvil. Solo se usan en tu teléfono para armar el mensaje: no se envían a ningún servidor.</p>
+      <label class="calc-lab" for="pg-banco">Banco</label>
+      <select class="dv-txt" id="pg-banco"></select>
+      <label class="calc-lab dv-t" for="pg-ced">Cédula o RIF</label>
+      <input class="dv-txt" id="pg-ced" type="text" maxlength="20" placeholder="V-12345678" autocomplete="off">
+      <label class="calc-lab dv-t" for="pg-tel">Teléfono</label>
+      <input class="dv-txt" id="pg-tel" type="tel" inputmode="tel" maxlength="20" placeholder="0414-1234567" autocomplete="off">
+      <label class="dv-check"><input type="checkbox" id="pg-rec"> Recordar en este teléfono</label>
+      <button type="button" class="chip dv-add" id="pg-borrar">Borrar mis datos</button>
+    </details>
+
+    <p class="calc-lab dv-t">Así se verá tu mensaje</p>
+    <pre class="dv-prev" id="dv-prev"></pre>
+    <div class="dv-share">
+      <button type="button" class="btn wa" id="dv-wa">Compartir por WhatsApp</button>
+      <button type="button" class="chip" id="dv-tg">Telegram</button>
+      <button type="button" class="chip" id="dv-copy">Copiar mensaje</button>
+    </div>
+    <p class="calc-foot">Todo se calcula en tu teléfono. Las tasas se actualizan solas cada 5 minutos.</p>
   </section>
 
   <section class="vt aviso" id="aviso" hidden>
@@ -293,7 +400,7 @@
     </main>
   </section>
 
-  <section class="ayuda" id="ayuda" hidden>
+  <section class="vp ayuda" id="ayuda" hidden>
     <h2>Ayúdanos a conocer los precios reales</h2>
     <p>Reporta lo que pagaste hoy en el súper. Toma menos de un minuto.</p>
     <a class="btn" id="ayuda-btn" data-track="click-reportar" href="#" target="_blank" rel="noopener">Reportar un precio</a>
@@ -322,7 +429,7 @@ const CONFIG = {
   PRECIOS_ACTIVOS: false,   // pon true cuando haya reportes reales para mostrar los precios por ciudad
   ONESIGNAL_APP_ID: '328f28cf-5331-4002-94fc-b19935e7bcfd',   // notificaciones push (OneSignal); vacío = desactivado
   INSTAGRAM_URL: 'https://www.instagram.com/tasa.bcv/',
-  GOATCOUNTER: '',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
+  GOATCOUNTER: 'diegsalazar',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
   WHATSAPP_URL: 'https://whatsapp.com/channel/0029Vb8wo0zATRSjVTGClb3M',                                   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
 /* ========================================================= */
@@ -445,6 +552,7 @@ function renderTasas(){
   ajustar();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustar);
   try { if (typeof renderCalc === 'function' && $('#calc-res')) renderCalc(); } catch (err) { diag('Calculadora: ' + err.message); }
+  try { if (typeof renderDividir === 'function') renderDividir(); } catch (err) { diag('Dividir: ' + err.message); }
 }
 const reportBtn = (txt) => CONFIG.FORM_URL ? '<a class="btn" href="' + esc(CONFIG.FORM_URL) + '" target="_blank" rel="noopener">' + txt + '</a>' : '';
 
@@ -589,6 +697,302 @@ document.addEventListener('click', e => { const a = e.target.closest('[data-trac
 let _calcUsada = false;
 const usoCalc = k => { if (!_calcUsada){ _calcUsada = true; track('calc-usada'); } if (k) track('calc-moneda-' + k); };
 
+
+/* ---------- compartir ---------- */
+const SITIO = 'precioenvivo.com';
+function compartir(via, texto, evento){
+  if (!texto) return;
+  track(evento + '-' + via);
+  const url = via === 'wa'
+    ? 'https://wa.me/?text=' + encodeURIComponent(texto)
+    : 'https://t.me/share/url?url=' + encodeURIComponent('https://' + SITIO) + '&text=' + encodeURIComponent(texto);
+  window.open(url, '_blank', 'noopener');
+}
+async function copiarTexto(t){
+  try { await navigator.clipboard.writeText(t); return true; } catch(e){}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = t; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy'); ta.remove(); return ok;
+  } catch(e){ return false; }
+}
+const tasaDe = k => k === 'bs' ? 1 : ((R[k] && R[k].v) || NaN);
+const fmtOrig = (n, k) => k === 'bs' ? 'Bs ' + fmt.format(n) : (MON[k].sim + fmt.format(n) + (k === 'usdt' ? ' USDT' : ''));
+function montos(m, k){
+  if (k === 'bs'){ const u = R.usd && R.usd.v; return {bs: m, sec: u ? '≈ $' + fmt.format(m / u) : ''}; }
+  const t = tasaDe(k);
+  return {bs: t > 0 ? m * t : NaN, sec: fmtOrig(m, k)};
+}
+const lineaTxt = (m, k) => {
+  const x = montos(m, k);
+  return x.bs >= 0 ? '*Bs ' + fmt.format(x.bs) + '*' + (x.sec ? ' (' + x.sec + ')' : '') : x.sec;
+};
+const celdaHtml = x => (x.bs >= 0 ? 'Bs ' + esc(fmt.format(x.bs)) + (x.sec ? '<small>' + esc(x.sec) + '</small>' : '') : esc(x.sec));
+const nom = (p, i) => (p.n || '').trim() || 'Persona ' + (i + 1);
+
+/* texto para compartir: tasas y calculadora */
+function textoTasas(){
+  const l = ['📊 *Tasas de hoy*'];
+  if (R.usd) l.push('💵 Dólar BCV: *Bs ' + fmt.format(R.usd.v) + '*');
+  if (R.euro) l.push('💶 Euro BCV: *Bs ' + fmt.format(R.euro.v) + '*');
+  if (R.usdt) l.push('🪙 Promedio USDT: *Bs ' + fmt.format(R.usdt.v) + '*');
+  if (l.length === 1) return '';
+  l.push('', '👉 ' + SITIO);
+  return l.join('\n');
+}
+function textoCalc(){
+  const m = parseMonto(cIn.value);
+  if (!(m >= 0)) return '';
+  const t = {usd: R.usd && R.usd.v, euro: R.euro && R.euro.v, usdt: R.usdt && R.usdt.v};
+  const origen = cSrc === 'bs' ? m : (t[cSrc] ? m * t[cSrc] : NaN);
+  if (!(origen >= 0)) return '';
+  const l = ['💱 *' + fmtOrig(m, cSrc) + '* equivale a:'];
+  if (cSrc !== 'bs') l.push('• Bs ' + fmt.format(origen));
+  ['usd', 'euro', 'usdt'].forEach(k => { if (k !== cSrc && t[k]) l.push('• ' + fmtOrig(origen / t[k], k)); });
+  l.push('(tasas de hoy)', '', '👉 ' + SITIO);
+  return l.join('\n');
+}
+$('#tasas-wa').addEventListener('click', () => compartir('wa', textoTasas(), 'tasas-compartir'));
+$('#tasas-tg').addEventListener('click', () => compartir('tg', textoTasas(), 'tasas-compartir'));
+$('#calc-wa').addEventListener('click', () => compartir('wa', textoCalc(), 'calc-compartir'));
+$('#calc-tg').addEventListener('click', () => compartir('tg', textoCalc(), 'calc-compartir'));
+
+/* ---------- dividir gastos y vaquita ---------- */
+const BANCOS = [
+  ['0102','Banco de Venezuela'],['0104','Venezolano de Crédito'],['0105','Mercantil'],['0108','Provincial'],
+  ['0114','Bancaribe'],['0115','Exterior'],['0116','BOD'],['0128','Banco Caroní'],['0134','Banesco'],
+  ['0137','Sofitasa'],['0138','Banco Plaza'],['0151','BFC Banco Fondo Común'],['0156','100% Banco'],
+  ['0157','DelSur'],['0163','Banco del Tesoro'],['0166','Banco Agrícola'],['0168','Bancrecer'],
+  ['0169','Mi Banco'],['0171','Banco Activo'],['0172','Bancamiga'],['0174','Banplus'],
+  ['0175','Banco Bicentenario'],['0177','Banfanb'],['0191','BNC Nacional de Crédito']
+];
+const REPARTOS = [['iguales', 'Partes iguales'], ['porcentaje', 'Por porcentaje'], ['consumo', 'Por consumo']];
+const AYUDA = {
+  iguales: 'Todos pagan lo mismo.',
+  porcentaje: 'Escribe el porcentaje de cada quien. Quien lo deje vacío paga lo que sobre.',
+  consumo: 'Escribe lo que consumió cada quien, en la misma moneda. Lo que sobre se reparte parejo.'
+};
+const PROPINAS = [0, 5, 10, 15];
+const DV = {
+  modo: 'cuenta',
+  c: {concepto: '', monto: '', src: 'usd', rep: 'iguales', prop: 0, pers: [{n: '', p: '', c: ''}, {n: '', p: '', c: ''}, {n: '', p: '', c: ''}]},
+  q: {concepto: '', monto: '', src: 'usd', pers: [{n: '', ok: false}, {n: '', ok: false}, {n: '', ok: false}, {n: '', ok: false}]},
+  pago: {banco: '', ced: '', tel: ''}
+};
+try {
+  const g = JSON.parse(store.get('dv_vaq') || 'null');
+  if (g && Array.isArray(g.pers) && g.pers.length >= 2 && g.pers.length <= 30){
+    DV.q = {concepto: String(g.concepto || '').slice(0, 40), monto: String(g.monto || '').slice(0, 15), src: MON[g.src] ? g.src : 'usd',
+            pers: g.pers.map(p => ({n: String((p && p.n) || '').slice(0, 30), ok: !!(p && p.ok)}))};
+  }
+} catch(e){}
+try {
+  const g = JSON.parse(store.get('dv_pago') || 'null');
+  if (g) DV.pago = {banco: String(g.banco || ''), ced: String(g.ced || '').slice(0, 20), tel: String(g.tel || '').slice(0, 20)};
+} catch(e){}
+let recordarPago = !!store.get('dv_pago');
+let _divUsado = false;
+const usoDiv = () => { if (!_divUsado){ _divUsado = true; track('dividir-usado'); } };
+const guardarVaq = () => store.set('dv_vaq', JSON.stringify(DV.q));
+
+function chipsSrc(el, actual){
+  el.innerHTML = Object.keys(MON).map(k => '<button type="button" class="chip" data-k="' + k + '" aria-pressed="' + (k === actual) + '">' + MON[k].nom + '</button>').join('');
+}
+function lineasPago(){
+  const p = DV.pago, b = BANCOS.find(x => x[0] === p.banco), ced = p.ced.trim(), tel = p.tel.trim();
+  if (!b && !ced && !tel) return [];
+  const l = ['', '💳 *Pago móvil:*'];
+  if (b) l.push('Banco: ' + b[0] + ' (' + b[1] + ')');
+  if (ced) l.push('Cédula: ' + ced);
+  if (tel) l.push('Teléfono: ' + tel);
+  return l;
+}
+
+/* --- dividir cuenta --- */
+function calcCuenta(){
+  const c = DV.c, total = parseMonto(c.monto), n = c.pers.length;
+  if (!(total > 0)) return {err: 'Escribe el total de la cuenta para ver cuánto le toca a cada quien.', suave: true};
+  let partes, nota = '';
+  if (c.rep === 'porcentaje'){
+    const ps = c.pers.map(p => parseMonto(p.p));
+    const fijos = ps.filter(v => !isNaN(v)), suma = fijos.reduce((a, b) => a + b, 0), libres = n - fijos.length;
+    if (suma > 100.0001) return {err: 'Los porcentajes suman ' + fmt.format(suma) + ' %. No pueden pasar de 100 %.'};
+    if (!libres && Math.abs(suma - 100) > 0.01) return {err: 'Los porcentajes suman ' + fmt.format(suma) + ' %. Deben sumar 100 %.'};
+    const resto = libres ? (100 - suma) / libres : 0;
+    partes = ps.map(v => (isNaN(v) ? resto : v) * total / 100);
+    if (libres) nota = 'Quien no tiene porcentaje paga ' + fmt.format(resto) + ' % (lo que sobra, repartido parejo).';
+  } else if (c.rep === 'consumo'){
+    const cs = c.pers.map(p => { const v = parseMonto(p.c); return v >= 0 ? v : 0; });
+    const suma = cs.reduce((a, b) => a + b, 0);
+    if (suma > total + 0.0001) return {err: 'Los consumos suman ' + fmtOrig(suma, c.src) + ', más que el total.'};
+    const resto = (total - suma) / n;
+    partes = cs.map(v => v + resto);
+    if (resto > 0.004) nota = 'Lo que sobra (' + fmtOrig(total - suma, c.src) + ') se reparte parejo: platos compartidos, propina, etc.';
+  } else partes = c.pers.map(() => total / n);
+  const f = 1 + c.prop / 100;
+  return {partes: partes.map(v => v * f), total: total * f, nota};
+}
+function filasC(){
+  const c = DV.c;
+  $('#dc-pers').innerHTML = c.pers.map((p, i) => {
+    const extra = c.rep === 'porcentaje'
+      ? '<input class="dv-txt dv-num" data-i="' + i + '" data-f="p" inputmode="decimal" autocomplete="off" placeholder="%" aria-label="Porcentaje de ' + esc(nom(p, i)) + '" value="' + esc(p.p) + '">'
+      : c.rep === 'consumo'
+      ? '<input class="dv-txt dv-num" data-i="' + i + '" data-f="c" inputmode="decimal" autocomplete="off" placeholder="Consumo" aria-label="Consumo de ' + esc(nom(p, i)) + '" value="' + esc(p.c) + '">'
+      : '';
+    return '<div class="dv-fila"><input class="dv-txt" data-i="' + i + '" data-f="n" maxlength="30" autocomplete="off" placeholder="Persona ' + (i + 1) + '" aria-label="Nombre de la persona ' + (i + 1) + '" value="' + esc(p.n) + '">' + extra +
+           (c.pers.length > 2 ? '<button type="button" class="dv-x" data-i="' + i + '" aria-label="Quitar a ' + esc(nom(p, i)) + '">×</button>' : '') + '</div>';
+  }).join('');
+}
+function chipsRepartoProp(){
+  $('#dc-rep').innerHTML = REPARTOS.map(r => '<button type="button" class="chip" data-r="' + r[0] + '" aria-pressed="' + (DV.c.rep === r[0]) + '">' + r[1] + '</button>').join('');
+  $('#dc-ayuda').textContent = AYUDA[DV.c.rep];
+  $('#dc-prop').innerHTML = PROPINAS.map(n => '<button type="button" class="chip" data-p="' + n + '" aria-pressed="' + (DV.c.prop === n) + '">' + (n ? n + ' %' : 'Sin propina') + '</button>').join('');
+}
+function renderCuentaRes(){
+  const c = DV.c, r = calcCuenta(), ul = $('#dc-res'), nt = $('#dc-nota');
+  $('#dc-sim').textContent = MON[c.src].sim;
+  if (r.err){ ul.innerHTML = ''; nt.textContent = r.err; nt.className = 'dv-nota' + (r.suave ? '' : ' err'); nt.hidden = false; return; }
+  ul.innerHTML = c.pers.map((p, i) => '<li><span class="k">' + esc(nom(p, i)) + '</span><span class="v">' + celdaHtml(montos(r.partes[i], c.src)) + '</span></li>').join('') +
+    '<li class="main"><span class="k">Total' + (c.prop ? '<small>Con ' + c.prop + ' % de propina</small>' : '') + '</span><span class="v">' + celdaHtml(montos(r.total, c.src)) + '</span></li>';
+  nt.textContent = r.nota || ''; nt.className = 'dv-nota'; nt.hidden = !r.nota;
+}
+function textoCuenta(){
+  const c = DV.c, r = calcCuenta();
+  if (r.err) return '';
+  const l = ['🧾 *' + (c.concepto.trim() || 'Cuenta') + '* (' + (c.src === 'usdt' ? 'tasa USDT' : 'tasa BCV') + ' de hoy)'];
+  c.pers.forEach((p, i) => l.push(nom(p, i) + ': ' + lineaTxt(r.partes[i], c.src)));
+  l.push('', '*Total' + (c.prop ? ' con propina' : '') + ':* ' + lineaTxt(r.total, c.src));
+  return l.concat(lineasPago(), ['', '👉 ' + SITIO]).join('\n');
+}
+
+/* --- vaquita --- */
+function filasQ(){
+  const q = DV.q;
+  $('#dq-pers').innerHTML = q.pers.map((p, i) =>
+    '<div class="dv-fila"><input class="dv-ok" type="checkbox" data-i="' + i + '" data-f="ok" aria-label="' + esc(nom(p, i)) + ' ya pagó"' + (p.ok ? ' checked' : '') + '>' +
+    '<input class="dv-txt" data-i="' + i + '" data-f="n" maxlength="30" autocomplete="off" placeholder="Persona ' + (i + 1) + '" aria-label="Nombre de la persona ' + (i + 1) + '" value="' + esc(p.n) + '">' +
+    (q.pers.length > 2 ? '<button type="button" class="dv-x" data-i="' + i + '" aria-label="Quitar a ' + esc(nom(p, i)) + '">×</button>' : '') + '</div>'
+  ).join('');
+}
+function renderVaqRes(){
+  const q = DV.q, total = parseMonto(q.monto), n = q.pers.length, box = $('#dq-res'), nt = $('#dq-nota');
+  $('#dq-sim').textContent = MON[q.src].sim;
+  if (!(total > 0)){ box.innerHTML = ''; nt.textContent = 'Escribe cuánto cuesta para ver cuánto pone cada uno.'; nt.className = 'dv-nota'; nt.hidden = false; return; }
+  nt.hidden = true;
+  const cuota = total / n, x = montos(cuota, q.src), ok = q.pers.filter(p => p.ok).length;
+  const falta = montos(cuota * (n - ok), q.src);
+  box.innerHTML = '<div class="dv-cuota"><span>Cada uno pone</span><b>' + (x.bs >= 0 ? 'Bs ' + esc(fmt.format(x.bs)) : esc(x.sec)) + '</b>' + (x.bs >= 0 && x.sec ? '<small>' + esc(x.sec) + '</small>' : '') + '</div>' +
+    '<div class="dv-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + ok + '"><div style="width:' + Math.round(ok / n * 100) + '%"></div></div>' +
+    '<p class="dv-prog">' + (ok === n ? '🎉 ¡Vaquita completa!' : 'Van ' + ok + ' de ' + n + ' · faltan ' + (n - ok)) + '</p>' +
+    (ok < n && falta.bs >= 0 ? '<p class="calc-foot">Falta reunir Bs ' + esc(fmt.format(falta.bs)) + (falta.sec ? ' (' + esc(falta.sec) + ')' : '') + '</p>' : '');
+}
+function textoVaq(){
+  const q = DV.q, total = parseMonto(q.monto), n = q.pers.length;
+  if (!(total > 0)) return '';
+  const ok = q.pers.filter(p => p.ok).length;
+  const l = ['🐄 *Vaquita' + (q.concepto.trim() ? ': ' + q.concepto.trim() : '') + '*'];
+  l.push('Total: ' + fmtOrig(total, q.src) + ' entre ' + n + '. Cada uno pone: ' + lineaTxt(total / n, q.src));
+  l.push('');
+  q.pers.forEach((p, i) => l.push((p.ok ? '✅ ' : '⏳ ') + nom(p, i)));
+  l.push('', 'Van ' + ok + ' de ' + n + (ok < n ? ' · faltan ' + (n - ok) : ' · ¡completa! 🎉'));
+  return l.concat(lineasPago(), ['', '👉 ' + SITIO]).join('\n');
+}
+
+/* --- compartir el mensaje del modo activo --- */
+const textoActual = () => DV.modo === 'cuenta' ? textoCuenta() : textoVaq();
+const eventoActual = () => DV.modo === 'cuenta' ? 'dividir-compartir' : 'vaquita-compartir';
+function actualizarShare(){
+  const t = textoActual();
+  $('#dv-prev').textContent = t || 'Completa el monto para ver el mensaje que vas a compartir.';
+  ['#dv-wa', '#dv-tg', '#dv-copy'].forEach(s => { $(s).disabled = !t; });
+}
+function renderDividir(){
+  renderCuentaRes(); renderVaqRes(); actualizarShare();
+}
+function setModo(m){
+  DV.modo = m;
+  document.querySelectorAll('#dv-modo .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+  $('#dv-cuenta').hidden = m !== 'cuenta'; $('#dv-vaq').hidden = m !== 'vaquita';
+  actualizarShare();
+}
+
+/* --- eventos: modo y compartir --- */
+$('#dv-modo').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; setModo(b.dataset.m); track('dividir-modo-' + b.dataset.m); });
+$('#dv-wa').addEventListener('click', () => compartir('wa', textoActual(), eventoActual()));
+$('#dv-tg').addEventListener('click', () => compartir('tg', textoActual(), eventoActual()));
+$('#dv-copy').addEventListener('click', async e => {
+  const t = textoActual(); if (!t) return;
+  const b = e.currentTarget, ok = await copiarTexto(t);
+  track(eventoActual() + '-copiar');
+  b.textContent = ok ? '✅ Copiado' : 'No se pudo copiar';
+  setTimeout(() => { b.textContent = 'Copiar mensaje'; }, 2000);
+});
+
+/* --- eventos: dividir cuenta --- */
+$('#dc-concepto').addEventListener('input', e => { DV.c.concepto = e.target.value; usoDiv(); actualizarShare(); });
+$('#dc-monto').addEventListener('input', e => { DV.c.monto = e.target.value; usoDiv(); renderCuentaRes(); actualizarShare(); });
+$('#dc-src').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; DV.c.src = b.dataset.k; chipsSrc($('#dc-src'), DV.c.src); usoDiv(); renderCuentaRes(); actualizarShare(); });
+$('#dc-pers').addEventListener('input', e => { const t = e.target; if (!t.dataset.f) return; DV.c.pers[+t.dataset.i][t.dataset.f] = t.value; usoDiv(); renderCuentaRes(); actualizarShare(); });
+$('#dc-pers').addEventListener('click', e => { const b = e.target.closest('.dv-x'); if (!b) return; DV.c.pers.splice(+b.dataset.i, 1); filasC(); renderCuentaRes(); actualizarShare(); });
+$('#dc-add').addEventListener('click', () => { if (DV.c.pers.length >= 20) return; DV.c.pers.push({n: '', p: '', c: ''}); filasC(); renderCuentaRes(); actualizarShare(); usoDiv(); });
+$('#dc-rep').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b) return; DV.c.rep = b.dataset.r; chipsRepartoProp(); filasC(); renderCuentaRes(); actualizarShare(); track('dividir-reparto-' + b.dataset.r); });
+$('#dc-prop').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b) return; DV.c.prop = +b.dataset.p; chipsRepartoProp(); renderCuentaRes(); actualizarShare(); });
+
+/* --- eventos: vaquita --- */
+$('#dq-concepto').addEventListener('input', e => { DV.q.concepto = e.target.value; guardarVaq(); usoDiv(); actualizarShare(); });
+$('#dq-monto').addEventListener('input', e => { DV.q.monto = e.target.value; guardarVaq(); usoDiv(); renderVaqRes(); actualizarShare(); });
+$('#dq-src').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; DV.q.src = b.dataset.k; chipsSrc($('#dq-src'), DV.q.src); guardarVaq(); usoDiv(); renderVaqRes(); actualizarShare(); });
+$('#dq-pers').addEventListener('input', e => {
+  const t = e.target; if (!t.dataset.f) return;
+  const p = DV.q.pers[+t.dataset.i];
+  if (t.dataset.f === 'ok'){ p.ok = t.checked; if (t.checked) track('vaquita-pago-marcado'); } else p.n = t.value;
+  guardarVaq(); usoDiv(); renderVaqRes(); actualizarShare();
+});
+$('#dq-pers').addEventListener('click', e => { const b = e.target.closest('.dv-x'); if (!b) return; DV.q.pers.splice(+b.dataset.i, 1); guardarVaq(); filasQ(); renderVaqRes(); actualizarShare(); });
+$('#dq-add').addEventListener('click', () => { if (DV.q.pers.length >= 30) return; DV.q.pers.push({n: '', ok: false}); guardarVaq(); filasQ(); renderVaqRes(); actualizarShare(); usoDiv(); });
+let _nuevaT = null;
+$('#dq-nueva').addEventListener('click', e => {
+  const b = e.currentTarget;
+  if (!_nuevaT){
+    b.textContent = '¿Seguro? Toca otra vez para borrar esta vaquita';
+    _nuevaT = setTimeout(() => { _nuevaT = null; b.textContent = 'Empezar otra vaquita'; }, 4000);
+    return;
+  }
+  clearTimeout(_nuevaT); _nuevaT = null; b.textContent = 'Empezar otra vaquita';
+  DV.q = {concepto: '', monto: '', src: DV.q.src, pers: [{n: '', ok: false}, {n: '', ok: false}, {n: '', ok: false}, {n: '', ok: false}]};
+  guardarVaq(); $('#dq-concepto').value = ''; $('#dq-monto').value = ''; filasQ(); renderVaqRes(); actualizarShare(); track('vaquita-nueva');
+});
+
+/* --- eventos: datos de pago (opcionales, solo en el teléfono) --- */
+function guardarPago(){ if (recordarPago) store.set('dv_pago', JSON.stringify(DV.pago)); }
+$('#pg-banco').innerHTML = '<option value="">Elige tu banco</option>' + BANCOS.map(b => '<option value="' + b[0] + '">' + b[0] + ' · ' + esc(b[1]) + '</option>').join('');
+$('#pg-banco').addEventListener('change', e => { DV.pago.banco = e.target.value; guardarPago(); actualizarShare(); track('pago-datos'); });
+$('#pg-ced').addEventListener('input', e => { DV.pago.ced = e.target.value; guardarPago(); actualizarShare(); });
+$('#pg-tel').addEventListener('input', e => { DV.pago.tel = e.target.value; guardarPago(); actualizarShare(); });
+$('#pg-rec').addEventListener('change', e => {
+  recordarPago = e.target.checked;
+  if (recordarPago) guardarPago(); else { try { localStorage.removeItem('dv_pago'); } catch(err){} }
+});
+$('#pg-borrar').addEventListener('click', () => {
+  DV.pago = {banco: '', ced: '', tel: ''}; recordarPago = false; $('#pg-rec').checked = false;
+  try { localStorage.removeItem('dv_pago'); } catch(err){}
+  $('#pg-banco').value = ''; $('#pg-ced').value = ''; $('#pg-tel').value = ''; actualizarShare();
+});
+
+/* --- arranque de la pestaña Dividir --- */
+function buildDividir(){
+  chipsSrc($('#dc-src'), DV.c.src); chipsSrc($('#dq-src'), DV.q.src);
+  chipsRepartoProp(); filasC(); filasQ();
+  $('#dq-concepto').value = DV.q.concepto; $('#dq-monto').value = DV.q.monto;
+  $('#pg-banco').value = DV.pago.banco; $('#pg-ced').value = DV.pago.ced; $('#pg-tel').value = DV.pago.tel; $('#pg-rec').checked = recordarPago;
+  if (DV.pago.banco || DV.pago.ced || DV.pago.tel) $('#dv-pago').open = true;
+  if (DV.q.monto || DV.q.pers.some(p => p.n || p.ok)) setModo('vaquita'); else setModo('cuenta');
+  renderDividir();
+}
+buildDividir();
+
 /* ---------- instalar como app ---------- */
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
@@ -616,7 +1020,7 @@ if ('serviceWorker' in navigator && !CONFIG.ONESIGNAL_APP_ID){ window.addEventLi
 
 /* ---------- pestañas ---------- */
 function irTab(t, guardar){
-  if (!['tasas', 'calculadora', 'precios', 'canales'].includes(t)) t = 'tasas';
+  if (!['tasas', 'calculadora', 'dividir', 'precios', 'canales'].includes(t)) t = 'tasas';
   document.body.dataset.tab = t;
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   if (guardar){ try { history.replaceState(null, '', t === 'tasas' ? location.pathname + location.search : '#' + t); } catch(e){} track('tab-' + t); }
