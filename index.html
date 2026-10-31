@@ -284,6 +284,7 @@
   .scan-zoom{position:absolute;right:12px;top:calc(12vh + min(28vh,250px) + 10px);display:flex;gap:8px;z-index:3}
   .scan.foto .scan-zoom{display:none}
   #scan-video{cursor:pointer}
+  .scan-link{background:none;border:0;color:var(--gold);text-decoration:underline;font:inherit;cursor:pointer;padding:0}
 </style>
 </head>
 <body>
@@ -534,6 +535,7 @@ const CONFIG = {
   PRECIOS_ACTIVOS: false,   // pon true cuando haya reportes reales para mostrar los precios por ciudad
   ONESIGNAL_APP_ID: '328f28cf-5331-4002-94fc-b19935e7bcfd',   // notificaciones push (OneSignal); vacío = desactivado
   INSTAGRAM_URL: 'https://www.instagram.com/tasa.bcv/',
+  SCAN_IA_URL: 'https://function-distributors-tampa-mature.trycloudflare.com/webhook/precio-scan',   // pega aquí el enlace (Production URL) del flujo de n8n 'Escáner de precios (Gemini)'; vacío = solo lector del teléfono
   GOATCOUNTER: 'diegsalazar',   // tu código de GoatCounter (ej. 'tasabcv'); vacío = sin estadísticas
   WHATSAPP_URL: 'https://whatsapp.com/channel/0029Vb8wo0zATRSjVTGClb3M',                                   // pega aquí el enlace del canal de WhatsApp cuando lo tengas
 };
@@ -1213,6 +1215,43 @@ const TESS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tess
 const scanEl = $('#scan'), scanVideo = $('#scan-video'), scanBox = $('#scan-box'), scanRes = $('#scan-res');
 let scanStream = null, scanId = 0, scanTimer = null, scanWorker = null, scanLib = null, scanCanvas = null;
 let scanCur = null, scanReads = [], scanFrozen = false, scanMsg = '', scanLeido = false, scanLimite = 0, scanClave = '', scanLuzOn = false;
+const IA_URL = String(CONFIG.SCAN_IA_URL || '').trim(), IA_DIA = 80, IA_SESION = 30;
+let iaBusy = false, iaOff = false, iaN = 0, iaFallos = 0, iaPrev = null, iaUlt = null, iaUltT = 0, iaLeyendo = false, iaCan = null;
+const iaActiva = () => !!IA_URL && !iaOff && store.get('ia_ok') === '1';
+function iaCupo(){
+  const d = new Date().toISOString().slice(0, 10); let o = {};
+  try { o = JSON.parse(store.get('ia_n') || '{}') || {}; } catch(e){ o = {}; }
+  return o.d === d ? o : {d, n: 0};
+}
+function iaSumar(){ const o = iaCupo(); o.n++; store.set('ia_n', JSON.stringify(o)); }
+function huella(){
+  const cv = iaCan || (iaCan = document.createElement('canvas')); cv.width = 32; cv.height = 18;
+  const g = cv.getContext('2d', {willReadFrequently: true}); g.drawImage(scanVideo, 0, 0, 32, 18);
+  const d = g.getImageData(0, 0, 32, 18).data, o = new Uint8Array(576);
+  for (let i = 0; i < 576; i++) o[i] = (d[i*4] * 77 + d[i*4+1] * 150 + d[i*4+2] * 29) >> 8;
+  return o;
+}
+function difH(a, b){ let s = 0; for (let i = 0; i < a.length; i++) s += Math.abs(a[i] - b[i]); return s / a.length; }
+function marcoIA(src, sx, sy, sw, sh, cw){
+  const ch = Math.max(40, Math.round(cw * sh / sw)), cv = document.createElement('canvas');
+  cv.width = cw; cv.height = ch; cv.getContext('2d').drawImage(src, sx, sy, sw, sh, 0, 0, cw, ch); return cv;
+}
+async function leerIA(cv){
+  const b64 = cv.toDataURL('image/jpeg', 0.72).split(',')[1];
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 9000);
+  try {
+    const r = await fetch(IA_URL, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({img: b64}), signal: ctl.signal});
+    if (!r.ok) throw new Error('http ' + r.status);
+    const j = await r.json(); if (j && j.error) throw new Error(String(j.error));
+    return j;
+  } finally { clearTimeout(tm); }
+}
+function aplicarIA(j){
+  const alts = [j.valor].concat((j.otros || []).filter(x => x > 0 && x !== j.valor));
+  scanCur = {v: j.valor, alts};
+  const mo = j.moneda;
+  if (mo === 'bs' || mo === 'euro' || (mo === 'usd' && scanSrc !== 'usd' && scanSrc !== 'usdt')){ scanSrc = mo; store.set('scan_src', scanSrc); }
+}
 let scanDeVivo = false, scanZoom = null, scanFase = '', scanBmp = null, scanUrl = null, cropR = {x: .1, y: .3, w: .8, h: .4};
 let scanSrc = (store.get('scan_src') && MON[store.get('scan_src')]) ? store.get('scan_src') : 'usd';
 
@@ -1348,17 +1387,20 @@ function convertirScan(m, src){
   return f;
 }
 function renderScan(force){
-  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
+  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, iaLeyendo, iaActiva(), R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
   if (!force && clave === scanClave) return;
   scanClave = clave;
-  const priv = '<p class="scan-priv">La imagen se procesa en tu teléfono y no se envía a ningún servidor.</p>';
+  const priv = '<p class="scan-priv">' + (iaActiva() ? 'La foto del precio se envía a Google (IA) solo para leerlo y no se guarda. <button type="button" class="scan-link" id="scan-ia-off">Usar solo el lector del teléfono</button>' : 'La imagen se procesa en tu teléfono y no se envía a ningún servidor.' + (IA_URL ? ' <button type="button" class="scan-link" id="scan-ia-on">Activar lectura con IA</button>' : '')) + '</p>';
+  if (scanFase === 'consent'){
+    scanRes.innerHTML = '<p class="scan-msg"><b>✨ Lectura con IA</b><br>Es más rápida y precisa. Para leer el precio, la foto se envía a un servicio de IA de Google; no la guardamos. ¿La activamos?</p><div class="scan-acc"><button type="button" class="btn" id="scan-ia-si">✔ Sí, activar</button><button type="button" class="chip" id="scan-ia-no">Usar solo el lector del teléfono</button></div>'; return;
+  }
   const manual = '<div class="scan-man"><input id="scan-man" inputmode="decimal" autocomplete="off" placeholder="¿No es ninguno? Escríbelo"><button type="button" class="chip" id="scan-man-ok">Listo</button></div>';
   if (scanFase === 'recorte'){
     scanRes.innerHTML = '<p class="scan-msg">Toca la foto o arrastra el recuadro dorado para ponerlo <b>solo sobre el precio</b>. Si hace falta, agrándalo desde la esquina.</p><div class="scan-acc"><button type="button" class="btn" id="scan-leer">🔍 Leer el precio</button></div>' + priv; return;
   }
   if (scanFase === 'leyendo'){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + priv; return; }
   if (scanMsg){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + (scanFase === 'resultado' ? '<div class="scan-acc"><button type="button" class="btn" id="scan-reintentar">↩ Mover el recuadro</button></div>' + manual : '') + (scanFrozen && scanCur === null && /pausa/.test(scanMsg) ? '<div class="scan-acc"><button type="button" class="btn" id="scan-seguir">▶ Seguir escaneando</button></div>' : '') + priv; return; }
-  if (!scanCur){ scanRes.innerHTML = '<p class="scan-msg">Apunta al precio y mantén firme el teléfono. Si no lo lee, toca <b>Capturar</b>.</p><div class="scan-acc"><button type="button" class="btn" id="scan-capturar">📍 Capturar precio</button></div>' + priv; return; }
+  if (!scanCur){ scanRes.innerHTML = '<p class="scan-msg">' + (iaLeyendo ? '✨ Leyendo con IA…' : iaActiva() ? 'Apunta al precio y mantén el teléfono quieto un instante. Si no lo lee, toca <b>Capturar</b>.' : 'Apunta al precio y mantén firme el teléfono. Si no lo lee, toca <b>Capturar</b>.') + '</p><div class="scan-acc"><button type="button" class="btn" id="scan-capturar">📍 Capturar precio</button></div>' + priv; return; }
   const m = scanCur.v, filas = convertirScan(m, scanSrc), foto = scanFase === 'resultado';
   const otros = foto ? scanCur.alts.slice(0, 6) : scanCur.alts.filter(x => x !== m).slice(0, 4);
   scanRes.innerHTML =
@@ -1367,7 +1409,7 @@ function renderScan(force){
     (otros.length ? '<p class="scan-otros">' + (foto ? 'Toca el precio correcto:' : '¿Era otro número?') + '</p><div class="chips">' + otros.map(x => '<button type="button" class="chip" data-av="' + x + '"' + (foto ? ' aria-pressed="' + (x === m) + '"' : '') + '>' + esc(fmt.format(x)) + '</button>').join('') + '</div>' : '') +
     (foto ? manual : '') +
     '<div class="scan-acc">' + (foto ? '<button type="button" class="chip" id="scan-reintentar">↩ Mover el recuadro</button>' + (scanDeVivo ? '<button type="button" class="chip" id="scan-vivo">📷 Volver al vivo</button>' : '') : '<button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button><button type="button" class="chip" id="scan-capturar">📍 Capturar y leer mejor</button>') + '<button type="button" class="btn" id="scan-usar">✔ Usar en la calculadora</button></div>' +
-    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="v">' + esc(f[1]) + '</span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>';
+    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="v">' + esc(f[1]) + '</span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>' + priv;
 }
 
 async function scanTick(id){
@@ -1382,6 +1424,61 @@ async function scanTick(id){
   }
   scanTimer = setTimeout(() => scanTick(id), 250);
 }
+async function caerALocal(id){
+  iaOff = true; iaLeyendo = false; scanMsg = 'Cargando el lector del teléfono…'; renderScan(true);
+  try { await cargarLector(); } catch(e){ if (id !== scanId) return; scanMsg = 'No pudimos leer con IA ni cargar el lector. Usa Capturar o escribe el precio.'; renderScan(true); return; }
+  if (id !== scanId) return;
+  scanMsg = ''; renderScan(true); scanTick(id);
+}
+async function iaTick(id){
+  if (id !== scanId) return;
+  if (Date.now() > scanLimite && !scanFrozen){ scanFrozen = true; scanMsg = 'Escáner en pausa para ahorrar batería.'; scanCur = null; renderScan(true); }
+  if (!scanFrozen && !document.hidden && scanVideo.readyState >= 2 && scanVideo.videoWidth && !iaBusy){
+    try {
+      const h = huella(), quieto = iaPrev && difH(h, iaPrev) < 9, ahora = Date.now(); iaPrev = h;
+      const nueva = !iaUlt || difH(h, iaUlt) > 7;
+      if (quieto && (nueva || ahora - iaUltT > 5000) && ahora - iaUltT > 1100){
+        if (iaCupo().n >= IA_DIA){ await caerALocal(id); return; }
+        if (iaN >= IA_SESION){ scanFrozen = true; scanMsg = 'Pausa para ahorrar lecturas con IA.'; scanCur = null; renderScan(true); scanTimer = setTimeout(() => iaTick(id), 500); return; }
+        iaBusy = true; iaLeyendo = true; iaUlt = h; iaUltT = ahora; iaN++; iaSumar(); renderScan(true);
+        const c = cajaVideo(), mx = c.sw * .1, my = c.sh * .1, sx = Math.max(0, c.sx - mx), sy = Math.max(0, c.sy - my);
+        const cv = marcoIA(scanVideo, sx, sy, Math.min(c.vw - sx, c.sw + 2 * mx), Math.min(c.vh - sy, c.sh + 2 * my), 512);
+        let j = null, err = null;
+        try { j = await leerIA(cv); } catch(e){ err = e; }
+        iaBusy = false; iaLeyendo = false;
+        if (id !== scanId) return;
+        if (err){
+          iaFallos++; track('scan-ia-error');
+          if (iaFallos >= 2 || /limite/.test(String(err.message))){ await caerALocal(id); return; }
+        } else {
+          iaFallos = 0;
+          if (j && j.valor > 0){ aplicarIA(j); scanFrozen = true; track('scan-ia'); }
+        }
+        renderScan(true);
+      }
+    } catch(e){ iaBusy = false; iaLeyendo = false; }
+  }
+  scanTimer = setTimeout(() => iaTick(id), 420);
+}
+async function iniciarLectura(id){
+  if (id !== scanId) return;
+  const ok = store.get('ia_ok');
+  if (IA_URL && ok !== '1' && ok !== '0'){ scanFase = 'consent'; scanMsg = ''; renderScan(true); return; }
+  scanFase = '';
+  if (iaActiva()){
+    iaPrev = null; iaUlt = null; iaUltT = 0; iaN = 0; iaFallos = 0; iaBusy = false; iaLeyendo = false;
+    scanMsg = ''; renderScan(true); iaTick(id); return;
+  }
+  scanMsg = scanWorker ? '' : 'Cargando el lector… (solo la primera vez)'; renderScan(true);
+  try { await cargarLector(); } catch(e){
+    if (id !== scanId) return;
+    track('scan-error-lector');
+    scanMsg = 'No pudimos cargar el lector. Revisa tu conexión y vuelve a intentar.'; renderScan(true); return;
+  }
+  if (id !== scanId) return;
+  scanMsg = ''; renderScan(true);
+  scanTick(id);
+}
 function detenerCamara(){
   try { if (scanStream) scanStream.getTracks().forEach(t => t.stop()); } catch(e){}
   scanStream = null; try { scanVideo.srcObject = null; } catch(e){}
@@ -1394,7 +1491,8 @@ function cerrarScan(){
   if (scanUrl){ try { URL.revokeObjectURL(scanUrl); } catch(e){} scanUrl = null; }
 }
 async function abrirScan(){
-  const id = ++scanId;
+  clearTimeout(scanTimer); detenerCamara();
+  const id = ++scanId; iaOff = false; iaBusy = false; iaLeyendo = false;
   scanEl.hidden = false; document.body.style.overflow = 'hidden';
   scanCur = null; scanReads = []; scanFrozen = false; scanLeido = false; scanLuzOn = false; scanClave = '';
   scanFase = ''; scanDeVivo = false; scanEl.classList.remove('foto'); $('#scan-crop').hidden = true;
@@ -1419,15 +1517,7 @@ async function abrirScan(){
     $('#scan-luz').hidden = !caps.torch;
     if (caps.zoom && caps.zoom.max > caps.zoom.min){ scanZoom = {min: caps.zoom.min, max: caps.zoom.max, v: (tr0.getSettings && tr0.getSettings().zoom) || caps.zoom.min}; $('#scan-zoom').hidden = false; }
   } catch(e){}
-  scanMsg = scanWorker ? '' : 'Cargando el lector… (solo la primera vez)'; renderScan(true);
-  try { await cargarLector(); } catch(e){
-    if (id !== scanId) return;
-    track('scan-error-lector');
-    scanMsg = 'No pudimos cargar el lector. Revisa tu conexión y vuelve a intentar.'; renderScan(true); return;
-  }
-  if (id !== scanId) return;
-  scanMsg = ''; renderScan(true);
-  scanTick(id);
+  await iniciarLectura(id);
 }
 
 /* --- eventos del escáner --- */
@@ -1506,6 +1596,18 @@ async function capturarVivo(){
 async function leerRecorte(){
   const id = scanId;
   scanFase = 'leyendo'; scanCur = null; scanMsg = 'Leyendo el precio… (la primera vez descarga el lector)'; renderScan(true);
+  if (iaActiva() && iaCupo().n < IA_DIA && scanBmp){
+    scanMsg = '✨ Leyendo con IA…'; renderScan(true);
+    try {
+      const W0 = scanBmp.width || scanBmp.naturalWidth, H0 = scanBmp.height || scanBmp.naturalHeight;
+      const x0 = Math.round(cropR.x * W0), y0 = Math.round(cropR.y * H0), w0 = Math.max(20, Math.min(W0 - x0, Math.round(cropR.w * W0))), h0 = Math.max(20, Math.min(H0 - y0, Math.round(cropR.h * H0)));
+      iaSumar();
+      const j = await leerIA(marcoIA(scanBmp, x0, y0, w0, h0, 640));
+      if (id !== scanId) return;
+      if (j && j.valor > 0){ aplicarIA(j); scanFase = 'resultado'; scanMsg = ''; track('scan-ia'); renderScan(true); return; }
+    } catch(e){ if (id !== scanId) return; track('scan-ia-error'); }
+    scanMsg = 'Leyendo el precio…'; renderScan(true);
+  }
   try { await cargarLector(); } catch(e){
     if (id !== scanId) return;
     track('scan-error-lector'); scanFase = 'resultado'; scanMsg = 'No pudimos cargar el lector. Revisa tu conexión o escribe el precio.'; renderScan(true); return;
@@ -1540,7 +1642,11 @@ scanRes.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.sk){ scanSrc = t.dataset.sk; store.set('scan_src', scanSrc); renderScan(true); return; }
   if (t.dataset.av){ scanCur = {v: parseFloat(t.dataset.av), alts: scanCur.alts}; scanFrozen = true; track('scan-otro-numero'); renderScan(true); return; }
-  if (t.id === 'scan-fijar'){ scanFrozen = !scanFrozen; if (!scanFrozen){ scanReads = []; scanLimite = Date.now() + 90000; } renderScan(true); return; }
+  if (t.id === 'scan-fijar'){ iaUlt = null; iaUltT = 0; scanFrozen = !scanFrozen; if (!scanFrozen){ scanReads = []; scanLimite = Date.now() + 90000; } renderScan(true); return; }
+  if (t.id === 'scan-ia-si'){ store.set('ia_ok', '1'); track('scan-ia-activar'); iniciarLectura(scanId); return; }
+  if (t.id === 'scan-ia-no'){ store.set('ia_ok', '0'); iniciarLectura(scanId); return; }
+  if (t.id === 'scan-ia-off'){ store.set('ia_ok', '0'); if (scanEl.classList.contains('foto')){ renderScan(true); } else abrirScan(); return; }
+  if (t.id === 'scan-ia-on'){ store.set('ia_ok', '1'); if (scanEl.classList.contains('foto')){ renderScan(true); } else abrirScan(); return; }
   if (t.id === 'scan-leer'){ leerRecorte(); return; }
   if (t.id === 'scan-capturar'){ capturarVivo(); return; }
   if (t.id === 'scan-vivo'){ abrirScan(); return; }
@@ -1549,7 +1655,7 @@ scanRes.addEventListener('click', e => {
     const v = parseMonto(($('#scan-man').value || '')); if (!(v > 0)) return;
     scanCur = {v, alts: (scanCur && scanCur.alts) ? scanCur.alts : [v]}; scanMsg = ''; scanFase = 'resultado'; track('scan-manual'); renderScan(true); return;
   }
-  if (t.id === 'scan-seguir'){ scanFrozen = false; scanMsg = ''; scanReads = []; scanLimite = Date.now() + 90000; renderScan(true); return; }
+  if (t.id === 'scan-seguir'){ iaN = 0; iaUlt = null; iaUltT = 0; scanFrozen = false; scanMsg = ''; scanReads = []; scanLimite = Date.now() + 90000; renderScan(true); return; }
   if (t.id === 'scan-usar' && scanCur){
     cSrc = scanSrc; store.set('calc_src', cSrc);
     cIn.value = String(scanCur.v).replace('.', ',');
