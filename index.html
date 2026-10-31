@@ -472,6 +472,8 @@
     <button type="button" class="btn scan-btn" id="carro-scan">📷 Escanear producto</button>
     <label class="carro-comp"><input type="checkbox" id="carro-comp" checked> <span>Compartir los precios que agregues, de forma anónima (solo producto y precio, sin tus datos). Ayuda a armar la lista de precios de referencia del país.</span></label>
     <p class="calc-foot" id="carro-vacio">Tu carrito está vacío. Escanea un precio o agrégalo a mano abajo.</p>
+    <label class="carro-comp"><input type="checkbox" id="carro-ubi"> <span>Marcar dónde está el precio. Usa tu ubicación una vez por producto y se guarda solo de forma aproximada, sin tu nombre. Es opcional.</span></label>
+    <p class="calc-foot" id="carro-ubi-msg" hidden></p>
     <ul class="carro-li" id="carro-li"></ul>
     <ul class="carro-tot" id="carro-tot"></ul>
     <div class="dv-share" id="carro-acc">
@@ -1833,11 +1835,21 @@ let carro = [];
 try { const j = JSON.parse(store.get('carro') || '[]'); if (Array.isArray(j)) carro = j.filter(x => x && x.p > 0 && MON[x.m]).slice(0, 100).map(x => ({n: String(x.n || '').slice(0, 40), p: +x.p, m: x.m, q: Math.max(1, Math.min(99, x.q | 0 || 1))})); } catch(e){}
 const carroGuardar = () => store.set('carro', JSON.stringify(carro));
 const compOn = () => store.get('comp_precios') !== '0';
-function enviarPrecio(n, p, m){
+const ubiOn = () => store.get('comp_ubi') === '1';
+function dondeEstoy(){
+  return new Promise(ok => {
+    if (!navigator.geolocation) return ok(null);
+    let listo = false; const fin = v => { if (!listo){ listo = true; ok(v); } };
+    setTimeout(() => fin(null), 7000);
+    try { navigator.geolocation.getCurrentPosition(pos => fin({lat: pos.coords.latitude, lon: pos.coords.longitude}), () => fin(null), {enableHighAccuracy: false, timeout: 6000, maximumAge: 120000}); } catch(e){ fin(null); }
+  });
+}
+async function enviarPrecio(n, p, m){
   try {
     if (!compOn() || !IA_URL || !n || n.length < 2) return;
-    fetch(IA_URL.replace(/\/+$/, '') + '/guardar', {method: 'POST', headers: {'Content-Type': 'application/json'}, keepalive: true,
-      body: JSON.stringify({n, p, m, t: R.usd && R.usd.v ? R.usd.v : null})}).catch(() => {});
+    const cuerpo = {n, p, m, t: R.usd && R.usd.v ? R.usd.v : null};
+    if (ubiOn()){ const u = await dondeEstoy(); if (u){ cuerpo.lat = Math.round(u.lat * 1000) / 1000; cuerpo.lon = Math.round(u.lon * 1000) / 1000; } }
+    fetch(IA_URL.replace(/\/+$/, '') + '/guardar', {method: 'POST', headers: {'Content-Type': 'application/json'}, keepalive: true, body: JSON.stringify(cuerpo)}).catch(() => {});
   } catch(e){}
 }
 function carroAgregar(n, p, m){
@@ -1900,7 +1912,16 @@ $('#ca-ok').addEventListener('click', () => {
 });
 renderCarro();
 $('#carro-comp').checked = compOn();
+$('#carro-ubi').checked = ubiOn();
 $('#carro-comp').addEventListener('change', e => { store.set('comp_precios', e.target.checked ? '1' : '0'); track(e.target.checked ? 'comp-si' : 'comp-no'); });
+
+$('#carro-ubi').addEventListener('change', async e => {
+  const msg = $('#carro-ubi-msg'); msg.hidden = true;
+  if (!e.target.checked){ store.set('comp_ubi', '0'); track('ubi-no'); return; }
+  const u = await dondeEstoy();
+  if (u){ store.set('comp_ubi', '1'); track('ubi-si'); }
+  else { e.target.checked = false; store.set('comp_ubi', '0'); msg.textContent = 'No pudimos usar tu ubicación. Revisa que el permiso esté activado en tu teléfono.'; msg.hidden = false; }
+});
 
 /* ---------- instalar como app ---------- */
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
