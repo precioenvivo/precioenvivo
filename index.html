@@ -297,6 +297,10 @@
   .crop-h::after{content:"";position:absolute;right:6px;bottom:6px;width:20px;height:20px;border-right:5px solid var(--gold);border-bottom:5px solid var(--gold);border-radius:0 0 8px 0}
   .scan-man{display:flex;gap:8px;margin-top:10px}
   .scan-capt{display:block;width:100%;min-height:54px;margin:0 0 8px;background:var(--gold);color:#0b2240;font:800 1.05rem var(--font);border:0;border-radius:12px;cursor:pointer}
+  .scan-nomrow{display:flex;gap:8px;margin:8px 0 2px}
+  .scan-nomrow .scan-nom{flex:1;min-width:0;margin:0}
+  .scan-nomrow #scan-add{flex:none;background:#2fa36b;color:#fff;font-weight:800;border:0;min-height:44px;border-radius:12px;padding:0 14px;font-size:.95rem;cursor:pointer}
+  .scan-res.carro .scan-capt{min-height:44px;font-size:.95rem;margin-bottom:6px}
   .scan-nom{display:block;width:100%;box-sizing:border-box;margin-top:10px;min-height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;padding:0 12px;font:600 1rem var(--font)}
   .scan-nom::placeholder{color:#a3b4cb}
   .scan-carro{margin-top:10px;font-size:.9rem;font-weight:700;color:#ffd978;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -319,6 +323,57 @@
   .scan-zoom{position:absolute;right:12px;top:calc(12vh + min(28vh,250px) + 10px);display:flex;gap:8px;z-index:3}
   .scan.foto .scan-zoom{display:none}
   .scan-link{background:none;border:0;color:var(--gold);text-decoration:underline;font:inherit;cursor:pointer;padding:0}
+
+  /* ===== versión compacta: menos scroll ===== */
+  .top .wrap{flex-wrap:nowrap;align-items:center;gap:10px;padding-top:12px;padding-bottom:12px}
+  .logo{width:44px!important;height:44px!important}
+  .marca{gap:10px;min-width:0}
+  .cuenta{margin-bottom:0;font-size:.85rem}
+  .top h1{font-size:1.4rem;white-space:nowrap}
+  .fecha{white-space:nowrap}
+  @media (max-width:360px){ .top h1{font-size:1.25rem} }
+  .fecha{text-align:right!important;width:auto!important;font-size:.78rem;flex:none}
+  .fecha b{font-size:.95rem}
+  .tab{min-height:50px;padding-top:8px;padding-bottom:6px}
+  .instalar-top{flex-wrap:nowrap;margin-top:8px;padding:8px 12px;gap:10px}
+  .instalar-top p{font-size:.92rem}
+  .instalar-top small{display:none}
+  .instalar-top.ayuda{flex-wrap:wrap}
+  .instalar-top.ayuda small{display:block}
+  .instalar-top .btn{min-height:40px;padding:0 16px;white-space:nowrap}
+  .tasas{gap:8px;padding-top:8px}
+  .rate-hero{padding:12px 18px 12px}
+  .rate-hero .rate-val{font-size:clamp(2.8rem,14vw,4.6rem)}
+  .rate-meta{margin-top:6px}
+  .rate-card{padding:10px 14px}
+  .rate-card .rate-val{font-size:clamp(1.4rem,6.6vw,2.2rem)}
+  .rate-card .rate-meta{margin-top:4px}
+  .brecha{padding:10px 16px;gap:10px}
+  .brecha strong{font-size:1.6rem}
+  .brecha span{font-size:.8rem}
+  .aviso{margin-top:8px;padding:12px 14px;gap:8px 14px}
+  .aviso small{font-size:.85rem}
+  .vc.calc{padding:12px 14px 4px;margin-top:8px}
+  .vc.calc h2{font-size:1.2rem}
+  .vc.calc .sub{display:none}
+  .vc.calc .calc-lab[for="calc-monto"]{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .vc .calc-row{display:flex;gap:8px;align-items:stretch;margin-top:8px}
+  .vc .calc-row .calc-in{flex:1;min-width:0}
+  .vc .calc-row .calc-in input{min-height:50px;font-size:1.7rem}
+  .vc .calc-row .scan-btn{width:96px;flex:none;margin:0;padding:4px 6px;min-height:0;font-size:.74rem;line-height:1.15;border-radius:3px}
+  .vc .calc-lab2{margin:10px 0 4px;font-size:.8rem}
+  .vc .calc-src4{grid-template-columns:repeat(4,1fr);gap:6px}
+  .vc .calc-src4 .chip{padding:6px 4px;min-height:46px;font-size:.72rem;line-height:1.15;text-align:center}
+  .vc .calc-src,.vc .calc-quick{margin-top:6px;gap:6px}
+  .vc .calc-quick .chip{min-height:36px;padding:4px 12px}
+  .vc .calc-res{margin-top:6px}
+  .vc .calc-res li{flex-wrap:nowrap;padding:7px 0;gap:8px}
+  .vc .calc-res .vw .v{font-size:1.15rem}
+  .vc .calc-res li.main .vw .v{font-size:1.3rem}
+  .vc .calc-res .cpy{min-height:34px;padding:3px 8px}
+  .vc.calc .dv-share{flex-wrap:nowrap;margin:8px 0 4px}
+  .vc.calc .dv-share .btn{flex:1;min-height:44px}
+  .vc .calc-foot{margin:2px 0 6px}
 </style>
 </head>
 <body>
@@ -386,8 +441,10 @@
     <h2>Calculadora</h2>
     <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
     <label class="calc-lab" for="calc-monto">Monto</label>
-    <div class="calc-in"><span id="calc-sim">$</span><input id="calc-monto" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="calc-foot"></div>
-    <button type="button" class="btn scan-btn" id="scan-open">📷 Escáner de precios</button>
+    <div class="calc-row">
+      <div class="calc-in"><span id="calc-sim">$</span><input id="calc-monto" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="calc-foot"></div>
+      <button type="button" class="btn scan-btn" id="scan-open">📷 Escáner de precios</button>
+    </div>
     <p class="calc-lab calc-lab2" id="calc-src-lab">Ese monto está en:</p>
     <div class="calc-src calc-src4" id="calc-src" role="group" aria-labelledby="calc-src-lab"></div>
     <div class="calc-quick" id="calc-quick" role="group" aria-label="Montos rápidos"></div>
@@ -1479,14 +1536,14 @@ function renderScan(force){
   if (!scanCur){ scanRes.innerHTML = cap + '<p class="scan-msg">' + (iaLeyendo ? 'Leyendo el precio…' : 'Apunta al precio y mantén el teléfono quieto un instante.') + '</p>' + (iaLeyendo || !scanCarro ? '' : manual) + carroL + priv; return; }
   const m = scanCur.v, filas = convertirScan(m, scanSrc), foto = scanFase === 'resultado';
   const otros = foto ? scanCur.alts.slice(0, 6) : scanCur.alts.filter(x => x !== m).slice(0, 4);
+  const nomFila = scanCarro ? '<div class="scan-nomrow"><input class="scan-nom" id="scan-nom" type="text" maxlength="40" autocomplete="off" placeholder="Nombre del producto" value="' + esc(scanNom) + '"><button type="button" id="scan-add">🛒 Agregar</button></div>' : '';
   scanRes.innerHTML = cap +
-    '<div class="scan-precio"><span>' + (foto ? 'Precio leído' : 'Precio detectado') + '</span><b>' + esc(MON[scanSrc].sim + ' ' + fmt.format(m)) + '</b></div>' +
+    '<div class="scan-precio"><span>' + (foto ? 'Precio leído' : 'Precio detectado') + '</span><b>' + esc(MON[scanSrc].sim + ' ' + fmt.format(m)) + '</b></div>' + nomFila +
     '<div class="chips" role="group" aria-label="Moneda del precio">' + Object.keys(MON).map(k => '<button type="button" class="chip" data-sk="' + k + '" aria-pressed="' + (k === scanSrc) + '">' + MON[k].nom + '</button>').join('') + '</div>' +
     (otros.length ? '<p class="scan-otros">' + (foto ? 'Toca el precio correcto:' : '¿Era otro número?') + '</p><div class="chips">' + otros.map(x => '<button type="button" class="chip" data-av="' + x + '"' + (foto ? ' aria-pressed="' + (x === m) + '"' : '') + '>' + esc(fmt.format(x)) + '</button>').join('') + '</div>' : '') +
     ((foto || scanCarro) ? manual : '') +
-    (scanCarro ? '<input class="scan-nom" id="scan-nom" type="text" maxlength="40" autocomplete="off" placeholder="Nombre del producto (opcional)" value="' + esc(scanNom) + '">' : '') +
-    '<div class="scan-acc">' + (foto ? '<button type="button" class="chip" id="scan-reintentar">↩ Mover el recuadro</button>' + (scanDeVivo ? '<button type="button" class="chip" id="scan-vivo">📷 Volver al vivo</button>' : '') : '<button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button>') + '' + (scanCarro ? '<button type="button" id="scan-add">🛒 Agregar al carrito</button>' : '<button type="button" class="btn" id="scan-usar">✔ Usar en la calculadora</button>') + '</div>' +
-    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="vw"><span class="v">' + esc(f[1]) + '</span><button type="button" class="cpy" data-c="' + numCopia(f[3]) + '" aria-label="Copiar ' + esc(f[0]) + '">Copiar</button></span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>' + carroL + priv;
+    '<div class="scan-acc">' + (foto ? '<button type="button" class="chip" id="scan-reintentar">↩ Mover el recuadro</button>' + (scanDeVivo ? '<button type="button" class="chip" id="scan-vivo">📷 Volver al vivo</button>' : '') : '<button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button>') + '' + (scanCarro ? '' : '<button type="button" class="btn" id="scan-usar">✔ Usar en la calculadora</button>') + '</div>' +
+    (scanCarro ? '' : '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="vw"><span class="v">' + esc(f[1]) + '</span><button type="button" class="cpy" data-c="' + numCopia(f[3]) + '" aria-label="Copiar ' + esc(f[0]) + '">Copiar</button></span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>') + carroL + priv;
 }
 
 async function scanTick(id){
@@ -1844,6 +1901,7 @@ else {
       _instalar = null;
       return;
     }
+    $('#instalar').classList.add('ayuda');
     $('#instalar-txt').textContent = esIOS
       ? 'Toca el botón Compartir (el cuadrado con la flecha) y luego "Agregar a pantalla de inicio".'
       : 'Abre el menú ⋮ de tu navegador y toca "Instalar app" o "Agregar a pantalla de inicio".';
