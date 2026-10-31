@@ -250,9 +250,9 @@
   .scan-top-r{display:flex;gap:8px}
   .scan-b{min-width:48px;height:48px;border-radius:24px;border:0;background:rgba(0,0,0,.6);color:#fff;font:700 .95rem var(--font);padding:0 16px;cursor:pointer}
   .scan-b[aria-pressed="true"]{background:var(--gold);color:#0b2240}
-  .scan-cap{position:absolute;left:0;right:0;top:calc(17vh - 36px);text-align:center;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.8);z-index:2;margin:0}
-  .scan-box{position:absolute;left:50%;top:17vh;transform:translateX(-50%);width:min(88vw,560px);height:min(24vh,200px);border:3px solid var(--gold);border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.5);z-index:1;pointer-events:none}
-  .scan-res{position:absolute;left:0;right:0;bottom:0;max-height:58vh;overflow:auto;background:#0b2240;border-top:4px solid var(--gold);border-radius:22px 22px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));z-index:3}
+  .scan-cap{position:absolute;left:0;right:0;top:calc(12vh - 34px);text-align:center;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.8);z-index:2;margin:0}
+  .scan-box{position:absolute;left:50%;top:12vh;transform:translateX(-50%);width:min(94vw,620px);height:min(28vh,250px);border:3px solid var(--gold);border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.5);z-index:1;pointer-events:none}
+  .scan-res{position:absolute;left:0;right:0;bottom:0;max-height:54vh;overflow:auto;background:#0b2240;border-top:4px solid var(--gold);border-radius:22px 22px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));z-index:3}
   .scan-msg{margin:4px 0 8px;font-weight:600;color:#e9eff7}
   .scan-priv{margin:6px 0 0;color:#a3b4cb;font-size:.8rem}
   .scan-precio{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
@@ -269,7 +269,21 @@
   .scan-conv li.main .v{font-size:1.7rem;color:var(--gold)}
   .scan-acc{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .scan-acc .btn{flex:1;min-width:150px}
-.scan-acc #scan-usar{background:var(--gold);color:#0b2240;font-weight:800;border:0;min-height:48px;border-radius:12px;padding:0 16px;font-size:1rem}
+  .scan-btn2{width:100%;margin-top:8px;min-height:46px;background:transparent;border:2px solid var(--gold);color:inherit;font-weight:700;font-size:.95rem}
+  .scan-acc #scan-usar{background:var(--gold);color:#0b2240;font-weight:800;border:0;min-height:48px;border-radius:12px;padding:0 16px;font-size:1rem}
+  .scan.foto video,.scan.foto .scan-box,.scan.foto .scan-cap{display:none}
+  .scan-crop{position:absolute;left:0;right:0;top:72px;bottom:0;display:flex;justify-content:center;align-items:flex-start;padding:6px 12px 0;z-index:2}
+  .crop-wrap{position:relative;overflow:hidden;line-height:0;border-radius:10px;max-width:100%;touch-action:none;background:#111}
+  .crop-wrap img{display:block;max-width:100%;max-height:36vh;width:auto;height:auto;user-select:none;-webkit-user-drag:none}
+  .crop-box{position:absolute;border:3px solid var(--gold);border-radius:8px;box-shadow:0 0 0 100vmax rgba(0,0,0,.5);touch-action:none;cursor:move}
+  .crop-h{position:absolute;right:-6px;bottom:-6px;width:44px;height:44px;touch-action:none;cursor:nwse-resize}
+  .crop-h::after{content:"";position:absolute;right:6px;bottom:6px;width:20px;height:20px;border-right:5px solid var(--gold);border-bottom:5px solid var(--gold);border-radius:0 0 8px 0}
+  .scan-man{display:flex;gap:8px;margin-top:10px}
+  .scan-man input{flex:1;min-width:0;min-height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;padding:0 12px;font:600 1rem var(--font)}
+  .scan-man input::placeholder{color:#a3b4cb}
+  .scan-zoom{position:absolute;right:12px;top:calc(12vh + min(28vh,250px) + 10px);display:flex;gap:8px;z-index:3}
+  .scan.foto .scan-zoom{display:none}
+  #scan-video{cursor:pointer}
 </style>
 </head>
 <body>
@@ -337,7 +351,8 @@
     <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
     <label class="calc-lab" for="calc-monto">Monto</label>
     <div class="calc-in"><span id="calc-sim">$</span><input id="calc-monto" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="calc-foot"></div>
-    <button type="button" class="btn scan-btn" id="scan-open">📷 Escanear un precio</button>
+    <button type="button" class="btn scan-btn" id="scan-photo-open">📸 Leer el precio de una etiqueta</button>
+    <button type="button" class="btn scan-btn2" id="scan-open">📷 Escáner en vivo (experimental)</button>
     <div class="calc-quick" id="calc-quick" role="group" aria-label="Montos rápidos"></div>
     <div class="calc-src" id="calc-src" role="group" aria-label="Moneda del monto"></div>
     <ul class="calc-res" id="calc-res" aria-live="polite"></ul>
@@ -487,12 +502,18 @@
     <button type="button" class="scan-b" id="scan-cerrar" aria-label="Cerrar el escáner">✕ Cerrar</button>
     <div class="scan-top-r">
       <button type="button" class="scan-b" id="scan-luz" aria-pressed="false" hidden>🔦 Luz</button>
-      <button type="button" class="scan-b" id="scan-foto">🖼 Elegir foto</button>
+      <button type="button" class="scan-b" id="scan-foto">📸 Foto</button>
+      <button type="button" class="scan-b" id="scan-gal">🖼 Galería</button>
     </div>
   </div>
   <p class="scan-cap">Encuadra solo el precio</p>
   <div class="scan-box" id="scan-box"></div>
+  <div class="scan-zoom" id="scan-zoom" hidden><button type="button" class="scan-b" id="scan-zm" aria-label="Alejar">➖</button><button type="button" class="scan-b" id="scan-zp" aria-label="Acercar">➕ Zoom</button></div>
+  <div class="scan-crop" id="scan-crop" hidden>
+    <div class="crop-wrap" id="crop-wrap"><img id="crop-img" alt="Foto de la etiqueta" draggable="false"><div class="crop-box" id="crop-box"><span class="crop-h" id="crop-h"></span></div></div>
+  </div>
   <div class="scan-res" id="scan-res" aria-live="polite"></div>
+  <input type="file" id="scan-cam" accept="image/*" capture="environment" hidden>
   <input type="file" id="scan-file" accept="image/*" hidden>
 </div>
 
@@ -1192,6 +1213,7 @@ const TESS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tess
 const scanEl = $('#scan'), scanVideo = $('#scan-video'), scanBox = $('#scan-box'), scanRes = $('#scan-res');
 let scanStream = null, scanId = 0, scanTimer = null, scanWorker = null, scanLib = null, scanCanvas = null;
 let scanCur = null, scanReads = [], scanFrozen = false, scanMsg = '', scanLeido = false, scanLimite = 0, scanClave = '', scanLuzOn = false;
+let scanDeVivo = false, scanZoom = null, scanFase = '', scanBmp = null, scanUrl = null, cropR = {x: .1, y: .3, w: .8, h: .4};
 let scanSrc = (store.get('scan_src') && MON[store.get('scan_src')]) ? store.get('scan_src') : 'usd';
 
 function cargarLector(){
@@ -1214,51 +1236,88 @@ function cargarLector(){
   return scanLib;
 }
 
-function preparar(src, sx, sy, sw, sh, cw){
-  cw = cw || 560;
-  const ch = Math.max(60, Math.round(cw * sh / sw));
+function preparar(src, sx, sy, sw, sh, cw, modo){
+  cw = cw || 560; modo = modo || 'auto';
+  const ch = Math.max(40, Math.min(900, Math.round(cw * sh / sw)));
   const cv = scanCanvas || (scanCanvas = document.createElement('canvas'));
   cv.width = cw; cv.height = ch;
   const g = cv.getContext('2d', {willReadFrequently: true});
+  g.imageSmoothingQuality = 'high';
   g.drawImage(src, sx, sy, sw, sh, 0, 0, cw, ch);
   const im = g.getImageData(0, 0, cw, ch), d = im.data, n = cw * ch, hist = new Uint32Array(256);
   let suma = 0;
   for (let i = 0; i < n; i++){ const y = (d[i*4] * 77 + d[i*4+1] * 150 + d[i*4+2] * 29) >> 8; d[i*4] = y; hist[y]++; suma += y; }
-  const inv = suma / n < 110;
+  const inv = modo === 'inv' ? true : modo === 'normal' ? false : suma / n < 110;
   let lo = 0, hi = 255, acc = 0;
   for (let k = 0; k < 256; k++){ acc += hist[k]; if (acc >= n * 0.01){ lo = k; break; } }
   acc = 0;
   for (let k = 0; k < 256; k++){ acc += hist[k]; if (acc >= n * 0.99){ hi = k; break; } }
   const rng = Math.max(hi - lo, 1);
+  const h2 = new Uint32Array(256);
   for (let i = 0; i < n; i++){
     let y = (d[i*4] - lo) * 255 / rng; y = y < 0 ? 0 : y > 255 ? 255 : y;
-    if (inv) y = 255 - y;
+    d[i*4] = y; h2[y | 0]++;
+  }
+  let umbral = -1;
+  if (modo === 'bin'){ /* Otsu */
+    let tot = 0, sumT = 0; for (let k = 0; k < 256; k++){ tot += h2[k]; sumT += k * h2[k]; }
+    let wB = 0, sumB = 0, mejor = 0;
+    for (let k = 0; k < 256; k++){ wB += h2[k]; if (!wB) continue; const wF = tot - wB; if (!wF) break; sumB += k * h2[k]; const mB = sumB / wB, mF = (sumT - sumB) / wF, v = wB * wF * (mB - mF) * (mB - mF); if (v > mejor){ mejor = v; umbral = k; } }
+    let blancos = 0; for (let k = umbral + 1; k < 256; k++) blancos += h2[k];
+    if (blancos < tot / 2) umbral = -umbral - 2; /* texto claro sobre fondo oscuro: invertir */
+  }
+  for (let i = 0; i < n; i++){
+    let y = d[i*4];
+    if (modo === 'bin' && umbral !== -1){
+      if (umbral >= 0) y = y > umbral ? 255 : 0; else y = y > (-umbral - 2) ? 0 : 255;
+    } else if (inv) y = 255 - y;
     d[i*4] = d[i*4+1] = d[i*4+2] = y; d[i*4+3] = 255;
   }
   g.putImageData(im, 0, 0);
   return cv;
 }
-function recortar(){
+function cajaVideo(){
   const vw = scanVideo.videoWidth, vh = scanVideo.videoHeight, W = scanVideo.clientWidth, H = scanVideo.clientHeight;
   const sc = Math.max(W / vw, H / vh), ox = (vw * sc - W) / 2, oy = (vh * sc - H) / 2;
   const b = scanBox.getBoundingClientRect(), v = scanVideo.getBoundingClientRect();
   const sx = Math.max(0, (b.left - v.left + ox) / sc), sy = Math.max(0, (b.top - v.top + oy) / sc);
   const sw = Math.min(vw - sx, b.width / sc), sh = Math.min(vh - sy, b.height / sc);
-  return preparar(scanVideo, sx, sy, sw, sh, 560);
+  return {sx, sy, sw, sh, vw, vh};
+}
+function recortar(){ const c = cajaVideo(); return preparar(scanVideo, c.sx, c.sy, c.sw, c.sh, 640); }
+
+function numDe(w){
+  const t = String((w && w.text) || '').trim().replace(/^[$S§]+/, '').replace(/\$/g, '').replace(/[.,]+$/, '');
+  const m = /^(\d{1,5})(?:[.,](\d{1,2}))?$/.exec(t);
+  if (!m) return null;
+  const v = parseFloat(t.replace(',', '.'));
+  if (!(v > 0)) return null;
+  const h = w.bbox ? (w.bbox.y1 - w.bbox.y0) : 10, conf = Math.max(Number(w.confidence) || 1, 1) / 100;
+  return {v, dec: !!m[2], s: h * conf * (m[2] ? 1.25 : 1)};
+}
+/* junta varias lecturas de la misma foto: gana el número que más veces sale y más grande se ve */
+function juntarLecturas(runs){
+  const mapa = new Map();
+  runs.forEach(words => {
+    const vistos = new Set();
+    words.forEach(w => {
+      const x = numDe(w); if (!x) return;
+      const o = mapa.get(x.v) || {v: x.v, votos: 0, s: 0, dec: x.dec};
+      if (!vistos.has(x.v)){ o.votos++; vistos.add(x.v); }
+      o.s = Math.max(o.s, x.s); o.dec = o.dec || x.dec; mapa.set(x.v, o);
+    });
+  });
+  const arr = [...mapa.values()]; if (!arr.length) return [];
+  const mx = Math.max(...arr.map(o => o.s)) || 1;
+  arr.forEach(o => { o.p = o.votos * 2 + o.s / mx + (o.dec ? 0.5 : 0); });
+  arr.sort((a, b) => b.p - a.p);
+  return arr.map(o => o.v);
 }
 
 /* elige el precio: el número con la letra más grande y más seguro, con decimales de preferencia */
 function procesarPalabras(words, directo){
   const c = [];
-  words.forEach(w => {
-    const t = String((w && w.text) || '').trim().replace(/^[$S§]+/, '').replace(/\$/g, '');
-    const m = /^(\d{1,4})(?:[.,](\d{1,2}))?$/.exec(t);
-    if (!m) return;
-    const v = parseFloat(t.replace(',', '.'));
-    if (!(v > 0)) return;
-    const h = w.bbox ? (w.bbox.y1 - w.bbox.y0) : 10, conf = Math.max(Number(w.confidence) || 1, 1) / 100;
-    c.push({v, s: h * conf * (m[2] ? 1.25 : 1)});
-  });
+  words.forEach(w => { const x = numDe(w); if (x) c.push({v: x.v, s: x.s}); });
   c.sort((a, b) => b.s - a.s);
   const alts = [];
   c.forEach(x => { if (!alts.includes(x.v)) alts.push(x.v); });
@@ -1275,7 +1334,7 @@ function procesarPalabras(words, directo){
     const ultimo = [...ult].reverse().find(x => x && x.v === estable);
     scanCur = {v: estable, alts: ultimo.alts};
     if (!scanLeido){ scanLeido = true; track('scan-lectura'); }
-  } else if (ult.length >= 3 && !ult.some(Boolean)) scanCur = null;
+  }
   renderScan(false);
 }
 
@@ -1289,19 +1348,26 @@ function convertirScan(m, src){
   return f;
 }
 function renderScan(force){
-  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
+  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
   if (!force && clave === scanClave) return;
   scanClave = clave;
-  if (scanMsg){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + (scanFrozen && scanCur === null && /pausa/.test(scanMsg) ? '<div class="scan-acc"><button type="button" class="btn" id="scan-seguir">▶ Seguir escaneando</button></div>' : '') + '<p class="scan-priv">La imagen se procesa en tu teléfono y no se envía a ningún servidor.</p>'; return; }
-  if (!scanCur){ scanRes.innerHTML = '<p class="scan-msg">Apunta al precio y mantén firme el teléfono…</p><p class="scan-priv">La imagen se procesa en tu teléfono y no se envía a ningún servidor.</p>'; return; }
-  const m = scanCur.v, filas = convertirScan(m, scanSrc);
-  const otros = scanCur.alts.filter(x => x !== m).slice(0, 4);
+  const priv = '<p class="scan-priv">La imagen se procesa en tu teléfono y no se envía a ningún servidor.</p>';
+  const manual = '<div class="scan-man"><input id="scan-man" inputmode="decimal" autocomplete="off" placeholder="¿No es ninguno? Escríbelo"><button type="button" class="chip" id="scan-man-ok">Listo</button></div>';
+  if (scanFase === 'recorte'){
+    scanRes.innerHTML = '<p class="scan-msg">Toca la foto o arrastra el recuadro dorado para ponerlo <b>solo sobre el precio</b>. Si hace falta, agrándalo desde la esquina.</p><div class="scan-acc"><button type="button" class="btn" id="scan-leer">🔍 Leer el precio</button></div>' + priv; return;
+  }
+  if (scanFase === 'leyendo'){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + priv; return; }
+  if (scanMsg){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + (scanFase === 'resultado' ? '<div class="scan-acc"><button type="button" class="btn" id="scan-reintentar">↩ Mover el recuadro</button></div>' + manual : '') + (scanFrozen && scanCur === null && /pausa/.test(scanMsg) ? '<div class="scan-acc"><button type="button" class="btn" id="scan-seguir">▶ Seguir escaneando</button></div>' : '') + priv; return; }
+  if (!scanCur){ scanRes.innerHTML = '<p class="scan-msg">Apunta al precio y mantén firme el teléfono. Si no lo lee, toca <b>Capturar</b>.</p><div class="scan-acc"><button type="button" class="btn" id="scan-capturar">📍 Capturar precio</button></div>' + priv; return; }
+  const m = scanCur.v, filas = convertirScan(m, scanSrc), foto = scanFase === 'resultado';
+  const otros = foto ? scanCur.alts.slice(0, 6) : scanCur.alts.filter(x => x !== m).slice(0, 4);
   scanRes.innerHTML =
-    '<div class="scan-precio"><span>Precio detectado</span><b>' + esc(MON[scanSrc].sim + ' ' + fmt.format(m)) + '</b></div>' +
+    '<div class="scan-precio"><span>' + (foto ? 'Precio leído' : 'Precio detectado') + '</span><b>' + esc(MON[scanSrc].sim + ' ' + fmt.format(m)) + '</b></div>' +
     '<div class="chips" role="group" aria-label="Moneda del precio">' + Object.keys(MON).map(k => '<button type="button" class="chip" data-sk="' + k + '" aria-pressed="' + (k === scanSrc) + '">' + MON[k].nom + '</button>').join('') + '</div>' +
-    (otros.length ? '<p class="scan-otros">¿Era otro número?</p><div class="chips">' + otros.map(x => '<button type="button" class="chip" data-av="' + x + '">' + esc(fmt.format(x)) + '</button>').join('') + '</div>' : '') +
-    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="v">' + esc(f[1]) + '</span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>' +
-    '<div class="scan-acc"><button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button><button type="button" class="btn" id="scan-usar">Usar en la calculadora</button></div>';
+    (otros.length ? '<p class="scan-otros">' + (foto ? 'Toca el precio correcto:' : '¿Era otro número?') + '</p><div class="chips">' + otros.map(x => '<button type="button" class="chip" data-av="' + x + '"' + (foto ? ' aria-pressed="' + (x === m) + '"' : '') + '>' + esc(fmt.format(x)) + '</button>').join('') + '</div>' : '') +
+    (foto ? manual : '') +
+    '<div class="scan-acc">' + (foto ? '<button type="button" class="chip" id="scan-reintentar">↩ Mover el recuadro</button>' + (scanDeVivo ? '<button type="button" class="chip" id="scan-vivo">📷 Volver al vivo</button>' : '') : '<button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button><button type="button" class="chip" id="scan-capturar">📍 Capturar y leer mejor</button>') + '<button type="button" class="btn" id="scan-usar">✔ Usar en la calculadora</button></div>' +
+    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="v">' + esc(f[1]) + '</span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>';
 }
 
 async function scanTick(id){
@@ -1324,11 +1390,15 @@ function cerrarScan(){
   if (scanEl.hidden) return;
   scanId++; clearTimeout(scanTimer); scanTimer = null; detenerCamara();
   scanEl.hidden = true; document.body.style.overflow = ''; scanLuzOn = false;
+  scanEl.classList.remove('foto'); $('#scan-crop').hidden = true; scanFase = ''; scanBmp = null; scanDeVivo = false;
+  if (scanUrl){ try { URL.revokeObjectURL(scanUrl); } catch(e){} scanUrl = null; }
 }
 async function abrirScan(){
   const id = ++scanId;
   scanEl.hidden = false; document.body.style.overflow = 'hidden';
   scanCur = null; scanReads = []; scanFrozen = false; scanLeido = false; scanLuzOn = false; scanClave = '';
+  scanFase = ''; scanDeVivo = false; scanEl.classList.remove('foto'); $('#scan-crop').hidden = true;
+  $('#scan-zoom').hidden = true; scanZoom = null;
   $('#scan-luz').hidden = true; $('#scan-luz').setAttribute('aria-pressed', 'false');
   scanLimite = Date.now() + 90000; scanMsg = 'Abriendo la cámara…'; renderScan(true);
   track('scan-abrir');
@@ -1344,7 +1414,11 @@ async function abrirScan(){
   if (id !== scanId){ detenerCamara(); return; }
   scanVideo.srcObject = scanStream;
   try { await scanVideo.play(); } catch(e){}
-  try { const caps = scanStream.getVideoTracks()[0].getCapabilities ? scanStream.getVideoTracks()[0].getCapabilities() : {}; $('#scan-luz').hidden = !caps.torch; } catch(e){}
+  try {
+    const tr0 = scanStream.getVideoTracks()[0], caps = tr0.getCapabilities ? tr0.getCapabilities() : {};
+    $('#scan-luz').hidden = !caps.torch;
+    if (caps.zoom && caps.zoom.max > caps.zoom.min){ scanZoom = {min: caps.zoom.min, max: caps.zoom.max, v: (tr0.getSettings && tr0.getSettings().zoom) || caps.zoom.min}; $('#scan-zoom').hidden = false; }
+  } catch(e){}
   scanMsg = scanWorker ? '' : 'Cargando el lector… (solo la primera vez)'; renderScan(true);
   try { await cargarLector(); } catch(e){
     if (id !== scanId) return;
@@ -1364,26 +1438,117 @@ $('#scan-luz').addEventListener('click', async e => {
   const tr = scanStream && scanStream.getVideoTracks()[0]; if (!tr) return;
   try { await tr.applyConstraints({advanced: [{torch: !scanLuzOn}]}); scanLuzOn = !scanLuzOn; e.currentTarget.setAttribute('aria-pressed', String(scanLuzOn)); } catch(err){}
 });
-$('#scan-foto').addEventListener('click', () => $('#scan-file').click());
-$('#scan-file').addEventListener('change', async e => {
-  const f = e.target.files && e.target.files[0]; e.target.value = '';
-  if (!f) return;
-  track('scan-foto'); scanFrozen = true; scanCur = null; scanMsg = 'Leyendo la foto…'; renderScan(true);
-  const id = scanId;
-  try {
-    await cargarLector();
-    const bmp = await (window.createImageBitmap ? createImageBitmap(f) : new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(f); }));
-    const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
-    const r = await scanWorker.recognize(preparar(bmp, 0, 0, w, h, 900));
-    if (id !== scanId) return;
-    procesarPalabras((r && r.data && r.data.words) || [], true);
-  } catch(err){ if (id !== scanId) return; track('scan-error-lector'); scanMsg = 'No pudimos leer la foto. Intenta con otra.'; renderScan(true); }
+/* --- modo foto: recuadro sobre el precio --- */
+const cropWrap = $('#crop-wrap'), cropImg = $('#crop-img'), cropBox = $('#crop-box');
+const lim = (v, a, b) => Math.max(a, Math.min(b, v));
+function pintarBox(){ cropBox.style.cssText = 'left:' + cropR.x * 100 + '%;top:' + cropR.y * 100 + '%;width:' + cropR.w * 100 + '%;height:' + cropR.h * 100 + '%'; }
+let cropDrag = null;
+cropBox.addEventListener('pointerdown', e => {
+  const rc = cropWrap.getBoundingClientRect();
+  cropDrag = {mode: e.target.id === 'crop-h' ? 'size' : 'move', x: e.clientX, y: e.clientY, r: Object.assign({}, cropR), W: rc.width || 1, H: rc.height || 1};
+  try { cropBox.setPointerCapture(e.pointerId); } catch(err){}
+  e.preventDefault(); e.stopPropagation();
 });
+cropBox.addEventListener('pointermove', e => {
+  if (!cropDrag) return;
+  const dx = (e.clientX - cropDrag.x) / cropDrag.W, dy = (e.clientY - cropDrag.y) / cropDrag.H, r = cropDrag.r;
+  if (cropDrag.mode === 'move'){ cropR.x = lim(r.x + dx, 0, 1 - r.w); cropR.y = lim(r.y + dy, 0, 1 - r.h); }
+  else { cropR.w = lim(r.w + dx, .08, 1 - r.x); cropR.h = lim(r.h + dy, .05, 1 - r.y); }
+  pintarBox();
+});
+['pointerup', 'pointercancel'].forEach(ev => cropBox.addEventListener(ev, () => { cropDrag = null; }));
+cropWrap.addEventListener('click', e => {
+  if (e.target !== cropImg) return;
+  const rc = cropWrap.getBoundingClientRect();
+  cropR.x = lim((e.clientX - rc.left) / rc.width - cropR.w / 2, 0, 1 - cropR.w);
+  cropR.y = lim((e.clientY - rc.top) / rc.height - cropR.h / 2, 0, 1 - cropR.h);
+  pintarBox();
+});
+
+function entrarFoto(bmp, blob, deVivo, leerYa){
+  scanId++; clearTimeout(scanTimer); scanTimer = null; detenerCamara();
+  scanEl.hidden = false; document.body.style.overflow = 'hidden'; scanEl.classList.add('foto'); $('#scan-zoom').hidden = true;
+  scanCur = null; scanReads = []; scanFrozen = true; scanClave = ''; $('#scan-luz').hidden = true; scanDeVivo = !!deVivo;
+  scanBmp = bmp;
+  if (scanUrl){ try { URL.revokeObjectURL(scanUrl); } catch(e){} }
+  scanUrl = URL.createObjectURL(blob); cropImg.src = scanUrl; pintarBox();
+  $('#scan-crop').hidden = false; scanFase = 'recorte'; scanMsg = ''; renderScan(true);
+  if (leerYa) leerRecorte();
+}
+async function cargarFoto(f){
+  if (!f) return;
+  track('scan-foto');
+  let bmp;
+  try {
+    bmp = await (window.createImageBitmap ? createImageBitmap(f) : new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(f); }));
+  } catch(err){ bmp = null; }
+  if (!bmp){
+    scanId++; clearTimeout(scanTimer); scanTimer = null; detenerCamara();
+    scanEl.hidden = false; document.body.style.overflow = 'hidden'; scanEl.classList.add('foto'); $('#scan-crop').hidden = true;
+    scanCur = null; scanFrozen = true; scanClave = ''; scanFase = 'resultado'; scanMsg = 'No pudimos abrir esa foto. Intenta con otra.'; renderScan(true); return;
+  }
+  cropR = {x: .1, y: .3, w: .8, h: .4};
+  entrarFoto(bmp, f, false, false);
+}
+/* captura: congela el cuadro de la cámara y lo lee con las 4 pasadas, usando el recuadro que ya estaba */
+async function capturarVivo(){
+  if (!scanVideo.videoWidth) return;
+  track('scan-capturar');
+  const c = cajaVideo(), cv = document.createElement('canvas');
+  cv.width = c.vw; cv.height = c.vh; cv.getContext('2d').drawImage(scanVideo, 0, 0);
+  const blob = await new Promise(ok => cv.toBlob(ok, 'image/jpeg', 0.92));
+  if (!blob) return;
+  const m = 0.04; /* un poco más ancho que el recuadro, por si el número quedó justo */
+  cropR = {x: lim(c.sx / c.vw - m, 0, 1), y: lim(c.sy / c.vh - m, 0, 1), w: 0, h: 0};
+  cropR.w = lim(c.sw / c.vw + 2 * m, .08, 1 - cropR.x); cropR.h = lim(c.sh / c.vh + 2 * m, .05, 1 - cropR.y);
+  entrarFoto(cv, blob, true, true);
+}
+async function leerRecorte(){
+  const id = scanId;
+  scanFase = 'leyendo'; scanCur = null; scanMsg = 'Leyendo el precio… (la primera vez descarga el lector)'; renderScan(true);
+  try { await cargarLector(); } catch(e){
+    if (id !== scanId) return;
+    track('scan-error-lector'); scanFase = 'resultado'; scanMsg = 'No pudimos cargar el lector. Revisa tu conexión o escribe el precio.'; renderScan(true); return;
+  }
+  if (id !== scanId || !scanBmp) return;
+  scanMsg = 'Leyendo el precio…'; renderScan(true);
+  const W = scanBmp.width || scanBmp.naturalWidth, H = scanBmp.height || scanBmp.naturalHeight;
+  const sx = Math.round(cropR.x * W), sy = Math.round(cropR.y * H), sw = Math.max(20, Math.round(cropR.w * W)), sh = Math.max(20, Math.round(cropR.h * H));
+  const cw = Math.round(lim(sw * 2, 600, 1100));
+  const pasadas = [['auto', '7'], ['auto', '11'], ['bin', '7'], ['inv', '7']], runs = [];
+  try {
+    for (const [modo, psm] of pasadas){
+      if (id !== scanId) return;
+      await scanWorker.setParameters({tessedit_pageseg_mode: psm});
+      const r = await scanWorker.recognize(preparar(scanBmp, sx, sy, Math.min(sw, W - sx), Math.min(sh, H - sy), cw, modo));
+      runs.push((r && r.data && r.data.words) || []);
+    }
+    try { await scanWorker.setParameters({tessedit_pageseg_mode: '11'}); } catch(e){}
+  } catch(err){ if (id !== scanId) return; track('scan-error-lector'); scanFase = 'resultado'; scanMsg = 'No pudimos leer la foto. Mueve el recuadro o escribe el precio.'; renderScan(true); return; }
+  if (id !== scanId) return;
+  const alts = juntarLecturas(runs);
+  scanFase = 'resultado'; scanCur = alts.length ? {v: alts[0], alts} : null;
+  scanMsg = alts.length ? '' : 'No encontré un número en ese recuadro. Muévelo para que cubra solo el precio, o escríbelo.';
+  if (alts.length) track('scan-lectura');
+  renderScan(true);
+}
+$('#scan-photo-open').addEventListener('click', () => $('#scan-cam').click());
+$('#scan-foto').addEventListener('click', () => $('#scan-cam').click());
+$('#scan-gal').addEventListener('click', () => $('#scan-file').click());
+['#scan-cam', '#scan-file'].forEach(q => $(q).addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; cargarFoto(f); }));
 scanRes.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.sk){ scanSrc = t.dataset.sk; store.set('scan_src', scanSrc); renderScan(true); return; }
   if (t.dataset.av){ scanCur = {v: parseFloat(t.dataset.av), alts: scanCur.alts}; scanFrozen = true; track('scan-otro-numero'); renderScan(true); return; }
   if (t.id === 'scan-fijar'){ scanFrozen = !scanFrozen; if (!scanFrozen){ scanReads = []; scanLimite = Date.now() + 90000; } renderScan(true); return; }
+  if (t.id === 'scan-leer'){ leerRecorte(); return; }
+  if (t.id === 'scan-capturar'){ capturarVivo(); return; }
+  if (t.id === 'scan-vivo'){ abrirScan(); return; }
+  if (t.id === 'scan-reintentar'){ scanFase = 'recorte'; scanCur = null; scanMsg = ''; renderScan(true); return; }
+  if (t.id === 'scan-man-ok'){
+    const v = parseMonto(($('#scan-man').value || '')); if (!(v > 0)) return;
+    scanCur = {v, alts: (scanCur && scanCur.alts) ? scanCur.alts : [v]}; scanMsg = ''; scanFase = 'resultado'; track('scan-manual'); renderScan(true); return;
+  }
   if (t.id === 'scan-seguir'){ scanFrozen = false; scanMsg = ''; scanReads = []; scanLimite = Date.now() + 90000; renderScan(true); return; }
   if (t.id === 'scan-usar' && scanCur){
     cSrc = scanSrc; store.set('calc_src', cSrc);
@@ -1391,6 +1556,17 @@ scanRes.addEventListener('click', e => {
     renderCalc(); track('scan-usar'); cerrarScan();
   }
 });
+
+/* tocar la imagen en vivo = capturar; zoom de la cámara */
+scanVideo.addEventListener('click', () => { if (!scanEl.classList.contains('foto') && scanVideo.videoWidth) capturarVivo(); });
+async function moverZoom(dir){
+  const tr = scanStream && scanStream.getVideoTracks()[0]; if (!tr || !scanZoom) return;
+  const paso = (scanZoom.max - scanZoom.min) / 6;
+  scanZoom.v = lim(scanZoom.v + dir * paso, scanZoom.min, scanZoom.max);
+  try { await tr.applyConstraints({advanced: [{zoom: scanZoom.v}]}); } catch(e){}
+}
+$('#scan-zm').addEventListener('click', e => { e.stopPropagation(); moverZoom(-1); });
+$('#scan-zp').addEventListener('click', e => { e.stopPropagation(); moverZoom(1); });
 
 /* ---------- instalar como app ---------- */
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
