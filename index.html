@@ -121,11 +121,11 @@
   .tab i{font-style:normal;font-size:1.25rem}
   @media (min-width:600px){ .tab{font-size:1rem;flex-direction:row;justify-content:center;gap:8px} .tab i{font-size:1.2rem} }
   .tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.07)}
-  body[data-tab="tasas"] .vc, body[data-tab="tasas"] .vd, body[data-tab="tasas"] .vp, body[data-tab="tasas"] .vk{display:none}
-  body[data-tab="calculadora"] .vt, body[data-tab="calculadora"] .vd, body[data-tab="calculadora"] .vp, body[data-tab="calculadora"] .vk{display:none}
-  body[data-tab="dividir"] .vt, body[data-tab="dividir"] .vc, body[data-tab="dividir"] .vp, body[data-tab="dividir"] .vk{display:none}
-  body[data-tab="precios"] .vt, body[data-tab="precios"] .vc, body[data-tab="precios"] .vd, body[data-tab="precios"] .vk{display:none}
-  body[data-tab="canales"] .vt, body[data-tab="canales"] .vc, body[data-tab="canales"] .vd, body[data-tab="canales"] .vp{display:none}
+  body[data-tab="tasas"] .vc, body[data-tab="tasas"] .vd, body[data-tab="tasas"] .vp, body[data-tab="tasas"] .vk, body[data-tab="tasas"] .vr{display:none}
+  body[data-tab="calculadora"] .vt, body[data-tab="calculadora"] .vd, body[data-tab="calculadora"] .vp, body[data-tab="calculadora"] .vk, body[data-tab="calculadora"] .vr{display:none}
+  body[data-tab="dividir"] .vt, body[data-tab="dividir"] .vc, body[data-tab="dividir"] .vp, body[data-tab="dividir"] .vk, body[data-tab="dividir"] .vr{display:none}
+  body[data-tab="precios"] .vt, body[data-tab="precios"] .vc, body[data-tab="precios"] .vd, body[data-tab="precios"] .vk, body[data-tab="precios"] .vr{display:none}
+  body[data-tab="canales"] .vt, body[data-tab="canales"] .vc, body[data-tab="canales"] .vd, body[data-tab="canales"] .vp, body[data-tab="canales"] .vr{display:none}
   .instalar-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:12px;background:var(--gold);color:#0b2240;padding:14px 16px}
   .instalar-top p{font-weight:700;line-height:1.25}
   .instalar-top small{display:block;font-weight:500;font-size:.85rem;margin-top:2px}
@@ -136,7 +136,10 @@
   .marca{display:flex;align-items:center;gap:14px}
   .logo{width:68px;height:68px;border-radius:50%;flex:none;box-shadow:0 0 0 3px rgba(201,162,75,.55)}
   @media (max-width:480px){ .logo{width:56px;height:56px} }
-  @media (max-width:400px){ .tab{font-size:.78rem} .tab i{font-size:1.1rem} }
+  #carro-acc[hidden],#carro-li[hidden],#carro-tot[hidden],#carro-vacio[hidden]{display:none!important}
+  body:not([data-tab="carrito"]) .vr{display:none}
+  body[data-tab="carrito"] .vt, body[data-tab="carrito"] .vc, body[data-tab="carrito"] .vd, body[data-tab="carrito"] .vp, body[data-tab="carrito"] .vk{display:none}
+  @media (max-width:400px){ .tab{font-size:.7rem} .tab i{font-size:1.1rem} }
   .canales{padding-top:26px}
   .canales-lista{display:grid;grid-template-columns:1fr;gap:12px;margin-top:6px}
   @media (min-width:700px){ .canales-lista{grid-template-columns:1fr 1fr} }
@@ -293,6 +296,23 @@
   .crop-h{position:absolute;right:-6px;bottom:-6px;width:44px;height:44px;touch-action:none;cursor:nwse-resize}
   .crop-h::after{content:"";position:absolute;right:6px;bottom:6px;width:20px;height:20px;border-right:5px solid var(--gold);border-bottom:5px solid var(--gold);border-radius:0 0 8px 0}
   .scan-man{display:flex;gap:8px;margin-top:10px}
+  .scan-nom{display:block;width:100%;box-sizing:border-box;margin-top:10px;min-height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;padding:0 12px;font:600 1rem var(--font)}
+  .scan-nom::placeholder{color:#a3b4cb}
+  .scan-carro{margin-top:10px;font-size:.9rem;font-weight:700;color:#ffd978;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .scan-acc #scan-add{background:#2fa36b;color:#fff;font-weight:800;border:0;min-height:48px;border-radius:12px;padding:0 16px;font-size:1rem}
+  .carro-li{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+  .carro-li li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .carro-li .cn{flex:1 1 140px;min-width:0;font-weight:600;overflow-wrap:anywhere}
+  .carro-li .cn small{display:block;font-weight:400;color:var(--slate);font-size:.8rem}
+  .carro-li .cq{display:flex;align-items:center;gap:6px}
+  .carro-li .cq b{min-width:1.6em;text-align:center}
+  .carro-li button{font:inherit;font-weight:700;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:3px;min-height:40px;min-width:40px;cursor:pointer}
+  .carro-tot{margin:12px 0 0;padding:0;list-style:none}
+  .carro-tot li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0}
+  .carro-tot .main .v{font-size:1.45rem;font-weight:800}
+  .carro-add{display:grid;grid-template-columns:1fr 100px;gap:8px;margin-top:14px}
+  .carro-add input,.carro-add select{min-height:44px;font:inherit;border:1px solid var(--rule);border-radius:3px;padding:0 10px;min-width:0;background:var(--paper);color:var(--ink)}
+  .carro-add .btn{grid-column:1/-1}
   .scan-man input{flex:1;min-width:0;min-height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;padding:0 12px;font:600 1rem var(--font)}
   .scan-man input::placeholder{color:#a3b4cb}
   .scan-zoom{position:absolute;right:12px;top:calc(12vh + min(28vh,250px) + 10px);display:flex;gap:8px;z-index:3}
@@ -322,6 +342,7 @@
     <button class="tab" role="tab" id="tab-dividir" data-tab="dividir" aria-selected="false" type="button"><i>🧾</i>Cuentas</button>
     <button class="tab" role="tab" id="tab-canales" data-tab="canales" aria-selected="false" type="button"><i>📣</i>Canales</button>
     <button class="tab" role="tab" id="tab-precios" data-tab="precios" aria-selected="false" type="button"><i>🛒</i>Precios</button>
+    <button class="tab" role="tab" id="tab-carrito" data-tab="carrito" aria-selected="false" type="button"><i>🛍️</i>Carrito</button>
   </div>
 </nav>
 
@@ -376,6 +397,26 @@
       <button type="button" class="chip" id="calc-tg">Telegram</button>
     </div>
     <p class="calc-foot" id="calc-foot">Las tasas se actualizan solas cada 5 minutos.</p>
+  </section>
+
+  <section class="vr calc" id="carro-sec" aria-label="Carrito de compras">
+    <h2>🛍️ Mi carrito</h2>
+    <p class="sub">Escanea los precios mientras compras y se van sumando aquí. Se guarda solo en tu teléfono.</p>
+    <button type="button" class="btn scan-btn" id="carro-scan">📷 Escanear producto</button>
+    <p class="calc-foot" id="carro-vacio">Tu carrito está vacío. Escanea un precio o agrégalo a mano abajo.</p>
+    <ul class="carro-li" id="carro-li"></ul>
+    <ul class="carro-tot" id="carro-tot"></ul>
+    <div class="dv-share" id="carro-acc">
+      <button type="button" class="btn wa" id="carro-wa">Enviar lista por WhatsApp</button>
+      <button type="button" class="chip" id="carro-copy">Copiar lista</button>
+      <button type="button" class="chip" id="carro-clear">Vaciar</button>
+    </div>
+    <div class="carro-add">
+      <input id="ca-n" type="text" maxlength="40" placeholder="Producto (ej. Harina)" autocomplete="off">
+      <input id="ca-p" type="text" inputmode="decimal" placeholder="Precio" autocomplete="off">
+      <select id="ca-m" aria-label="Moneda del precio"></select>
+      <button type="button" class="btn" id="ca-ok">+ Agregar a mano</button>
+    </div>
   </section>
 
   <section class="vd calc dividir" id="sec-dividir" aria-label="Cuentas: dividir, vaquita y cobrar">
@@ -792,6 +833,7 @@ function calcular(){
     filas.push('<li><span class="k">' + MON[k].lab + '<small>' + (tasas[k] ? 'Tasa ' + esc(fmt.format(tasas[k])) : 'Sin tasa') + '</small></span><span class="vw"><span class="v">' + esc(txt) + '</span>' + (tasas[k] ? cpy(origen / tasas[k], MON[k].lab) : '') + '</span></li>');
   });
   res.innerHTML = filas.join('');
+  try { renderCarro(); } catch(e){}
 }
 $('#calc-src').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; cSrc = b.dataset.k; store.set('calc_src', cSrc); usoCalc(cSrc); cIn.value = cSrc === 'bs' ? '1.000' : '100'; renderCalc(); });
 $('#calc-res').addEventListener('click', async e => {
@@ -1277,9 +1319,11 @@ async function leerIA(cv){
     return j;
   } finally { clearTimeout(tm); }
 }
+let scanNom = '', scanNomEdit = false, scanCarro = false;
 function aplicarIA(j){
   const alts = [j.valor].concat((j.otros || []).filter(x => x > 0 && x !== j.valor));
   scanCur = {v: j.valor, alts};
+  if (!scanNomEdit) scanNom = (typeof j.nombre === 'string') ? j.nombre.slice(0, 40) : '';
   const mo = j.moneda;
   if (mo === 'bs' || mo === 'euro' || (mo === 'usd' && scanSrc !== 'usd' && scanSrc !== 'usdt')){ scanSrc = mo; store.set('scan_src', scanSrc); }
 }
@@ -1419,26 +1463,28 @@ function convertirScan(m, src){
   return f;
 }
 function renderScan(force){
-  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, iaLeyendo, iaActiva(), iaMotivo, iaFuente, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
+  const clave = JSON.stringify([scanMsg, scanCur, scanSrc, scanFrozen, scanFase, iaLeyendo, iaActiva(), iaMotivo, iaFuente, scanCarro, carro.length, R.usd && R.usd.v, R.euro && R.euro.v, R.usdt && R.usdt.v]);
   if (!force && clave === scanClave) return;
   scanClave = clave;
   const priv = '<p class="scan-priv">' + (iaActiva() ? 'La foto del precio se envía a nuestro servidor solo para leerlo y se descarta enseguida. No se guarda.' : 'La imagen se procesa en tu teléfono y no se envía a ningún servidor.') + '</p>';
   const manual = '<div class="scan-man"><input id="scan-man" inputmode="decimal" autocomplete="off" placeholder="¿No es ninguno? Escríbelo"><button type="button" class="chip" id="scan-man-ok">Listo</button></div>';
+  const tc = carroTotal(), carroL = (scanCarro && carro.length) ? '<div class="scan-carro">🛒 ' + carro.length + (carro.length === 1 ? ' producto' : ' productos') + (tc.bs > 0 ? ' · Bs ' + esc(fmt.format(tc.bs)) : '') + ' <button type="button" class="chip" id="scan-vercarro">Ver carrito</button></div>' : '';
   if (scanFase === 'recorte'){
     scanRes.innerHTML = '<p class="scan-msg">Toca la foto o arrastra el recuadro dorado para ponerlo <b>solo sobre el precio</b>. Si hace falta, agrándalo desde la esquina.</p><div class="scan-acc"><button type="button" class="btn" id="scan-leer">🔍 Leer el precio</button></div>' + priv; return;
   }
   if (scanFase === 'leyendo'){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + priv; return; }
   if (scanMsg){ scanRes.innerHTML = '<p class="scan-msg">' + esc(scanMsg) + '</p>' + (scanFase === 'resultado' ? '<div class="scan-acc"><button type="button" class="btn" id="scan-reintentar">↩ Mover el recuadro</button></div>' + manual : '') + (scanFrozen && scanCur === null && /pausa/.test(scanMsg) ? '<div class="scan-acc"><button type="button" class="btn" id="scan-seguir">▶ Seguir escaneando</button></div>' : '') + priv; return; }
-  if (!scanCur){ scanRes.innerHTML = '<p class="scan-msg">' + (iaLeyendo ? 'Leyendo el precio…' : 'Apunta al precio y mantén el teléfono quieto un instante.') + '</p>' + priv; return; }
+  if (!scanCur){ scanRes.innerHTML = '<p class="scan-msg">' + (iaLeyendo ? 'Leyendo el precio…' : 'Apunta al precio y mantén el teléfono quieto un instante.') + '</p>' + (iaLeyendo || !scanCarro ? '' : manual) + carroL + priv; return; }
   const m = scanCur.v, filas = convertirScan(m, scanSrc), foto = scanFase === 'resultado';
   const otros = foto ? scanCur.alts.slice(0, 6) : scanCur.alts.filter(x => x !== m).slice(0, 4);
   scanRes.innerHTML =
     '<div class="scan-precio"><span>' + (foto ? 'Precio leído' : 'Precio detectado') + '</span><b>' + esc(MON[scanSrc].sim + ' ' + fmt.format(m)) + '</b></div>' +
     '<div class="chips" role="group" aria-label="Moneda del precio">' + Object.keys(MON).map(k => '<button type="button" class="chip" data-sk="' + k + '" aria-pressed="' + (k === scanSrc) + '">' + MON[k].nom + '</button>').join('') + '</div>' +
     (otros.length ? '<p class="scan-otros">' + (foto ? 'Toca el precio correcto:' : '¿Era otro número?') + '</p><div class="chips">' + otros.map(x => '<button type="button" class="chip" data-av="' + x + '"' + (foto ? ' aria-pressed="' + (x === m) + '"' : '') + '>' + esc(fmt.format(x)) + '</button>').join('') + '</div>' : '') +
-    (foto ? manual : '') +
-    '<div class="scan-acc">' + (foto ? '<button type="button" class="chip" id="scan-reintentar">↩ Mover el recuadro</button>' + (scanDeVivo ? '<button type="button" class="chip" id="scan-vivo">📷 Volver al vivo</button>' : '') : '<button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button>') + '<button type="button" class="btn" id="scan-usar">✔ Usar en la calculadora</button></div>' +
-    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="vw"><span class="v">' + esc(f[1]) + '</span><button type="button" class="cpy" data-c="' + numCopia(f[3]) + '" aria-label="Copiar ' + esc(f[0]) + '">Copiar</button></span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>' + priv;
+    ((foto || scanCarro) ? manual : '') +
+    (scanCarro ? '<input class="scan-nom" id="scan-nom" type="text" maxlength="40" autocomplete="off" placeholder="Nombre del producto (opcional)" value="' + esc(scanNom) + '">' : '') +
+    '<div class="scan-acc">' + (foto ? '<button type="button" class="chip" id="scan-reintentar">↩ Mover el recuadro</button>' + (scanDeVivo ? '<button type="button" class="chip" id="scan-vivo">📷 Volver al vivo</button>' : '') : '<button type="button" class="chip" id="scan-fijar">' + (scanFrozen ? '▶ Seguir' : '⏸ Fijar') + '</button>') + '' + (scanCarro ? '<button type="button" id="scan-add">🛒 Agregar al carrito</button>' : '<button type="button" class="btn" id="scan-usar">✔ Usar en la calculadora</button>') + '</div>' +
+    '<ul class="scan-conv">' + (filas ? filas.map(f => '<li' + (f[2] ? ' class="main"' : '') + '><span>' + esc(f[0]) + '</span><span class="vw"><span class="v">' + esc(f[1]) + '</span><button type="button" class="cpy" data-c="' + numCopia(f[3]) + '" aria-label="Copiar ' + esc(f[0]) + '">Copiar</button></span></li>').join('') : '<li><span>No pudimos traer la tasa. Intenta en un momento.</span></li>') + '</ul>' + carroL + priv;
 }
 
 async function scanTick(id){
@@ -1521,7 +1567,7 @@ async function abrirScan(){
   clearTimeout(scanTimer); detenerCamara();
   const id = ++scanId; iaOff = false; iaBusy = false; iaLeyendo = false; iaMotivo = ''; iaFuente = '';
   scanEl.hidden = false; document.body.style.overflow = 'hidden';
-  scanCur = null; scanReads = []; scanFrozen = false; scanLeido = false; scanLuzOn = false; scanClave = '';
+  scanCur = null; scanReads = []; scanFrozen = false; scanLeido = false; scanLuzOn = false; scanClave = ''; scanNom = ''; scanNomEdit = false;
   scanFase = ''; scanDeVivo = false; scanEl.classList.remove('foto'); $('#scan-crop').hidden = true;
   $('#scan-zoom').hidden = true; scanZoom = null;
   $('#scan-luz').hidden = true; $('#scan-luz').setAttribute('aria-pressed', 'false');
@@ -1548,7 +1594,8 @@ async function abrirScan(){
 }
 
 /* --- eventos del escáner --- */
-$('#scan-open').addEventListener('click', abrirScan);
+$('#scan-open').addEventListener('click', () => { scanCarro = false; abrirScan(); });
+$('#carro-scan').addEventListener('click', () => { scanCarro = true; abrirScan(); });
 $('#scan-cerrar').addEventListener('click', cerrarScan);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarScan(); });
 $('#scan-luz').addEventListener('click', async e => {
@@ -1585,7 +1632,7 @@ cropWrap.addEventListener('click', e => {
 function entrarFoto(bmp, blob, deVivo, leerYa){
   scanId++; clearTimeout(scanTimer); scanTimer = null; detenerCamara();
   scanEl.hidden = false; document.body.style.overflow = 'hidden'; scanEl.classList.add('foto'); $('#scan-zoom').hidden = true;
-  scanCur = null; scanReads = []; scanFrozen = true; scanClave = ''; $('#scan-luz').hidden = true; scanDeVivo = !!deVivo;
+  scanCur = null; scanReads = []; scanFrozen = true; scanClave = ''; $('#scan-luz').hidden = true; scanDeVivo = !!deVivo; scanNom = ''; scanNomEdit = false;
   scanBmp = bmp;
   if (scanUrl){ try { URL.revokeObjectURL(scanUrl); } catch(e){} }
   scanUrl = URL.createObjectURL(blob); cropImg.src = scanUrl; pintarBox();
@@ -1664,6 +1711,8 @@ async function leerRecorte(){
 $('#scan-foto').addEventListener('click', () => $('#scan-cam').click());
 $('#scan-gal').addEventListener('click', () => $('#scan-file').click());
 ['#scan-cam', '#scan-file'].forEach(q => $(q).addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; cargarFoto(f); }));
+scanRes.addEventListener('input', e => { if (e.target.id === 'scan-nom'){ scanNom = e.target.value; scanNomEdit = true; } });
+scanRes.addEventListener('focusin', e => { if (scanCarro && (e.target.id === 'scan-nom' || e.target.id === 'scan-man')){ scanFrozen = true; } });
 scanRes.addEventListener('click', async e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.classList.contains('cpy')){
@@ -1680,9 +1729,18 @@ scanRes.addEventListener('click', async e => {
   if (t.id === 'scan-reintentar'){ scanFase = 'recorte'; scanCur = null; scanMsg = ''; renderScan(true); return; }
   if (t.id === 'scan-man-ok'){
     const v = parseMonto(($('#scan-man').value || '')); if (!(v > 0)) return;
-    scanCur = {v, alts: (scanCur && scanCur.alts) ? scanCur.alts : [v]}; scanMsg = ''; scanFase = 'resultado'; track('scan-manual'); renderScan(true); return;
+    scanCur = {v, alts: (scanCur && scanCur.alts) ? scanCur.alts : [v]}; scanMsg = ''; if (scanFase !== '') scanFase = 'resultado'; else scanFrozen = true; track('scan-manual'); renderScan(true); return;
   }
   if (t.id === 'scan-seguir'){ iaN = 0; iaUlt = null; iaUltT = 0; scanFrozen = false; scanMsg = ''; scanReads = []; scanLimite = Date.now() + 90000; renderScan(true); return; }
+  if (t.id === 'scan-vercarro'){ cerrarScan(); window.scrollTo(0, 0); return; }
+  if (t.id === 'scan-add' && scanCur){
+    const nomEl = $('#scan-nom'), nom = ((nomEl && nomEl.value) || scanNom || '').trim().slice(0, 40);
+    carroAgregar(nom, scanCur.v, scanSrc); track('carro-agregar');
+    scanNom = ''; scanNomEdit = false; scanCur = null; scanMsg = '';
+    if (scanDeVivo || scanFase === ''){ if (scanDeVivo){ abrirScan(); return; } iaUlt = null; iaUltT = 0; scanFrozen = false; scanReads = []; scanLimite = Date.now() + 90000; }
+    else scanFase = 'recorte';
+    renderScan(true); return;
+  }
   if (t.id === 'scan-usar' && scanCur){
     cSrc = scanSrc; store.set('calc_src', cSrc);
     cIn.value = String(scanCur.v).replace('.', ',');
@@ -1699,6 +1757,69 @@ async function moverZoom(dir){
 }
 $('#scan-zm').addEventListener('click', e => { e.stopPropagation(); moverZoom(-1); });
 $('#scan-zp').addEventListener('click', e => { e.stopPropagation(); moverZoom(1); });
+
+/* ---------- carrito de compras ---------- */
+let carro = [];
+try { const j = JSON.parse(store.get('carro') || '[]'); if (Array.isArray(j)) carro = j.filter(x => x && x.p > 0 && MON[x.m]).slice(0, 100).map(x => ({n: String(x.n || '').slice(0, 40), p: +x.p, m: x.m, q: Math.max(1, Math.min(99, x.q | 0 || 1))})); } catch(e){}
+const carroGuardar = () => store.set('carro', JSON.stringify(carro));
+function carroAgregar(n, p, m){
+  if (!(p > 0) || !MON[m]) return;
+  const ya = carro.find(x => x.n.toLowerCase() === n.toLowerCase() && x.p === p && x.m === m && n);
+  if (ya) ya.q = Math.min(99, ya.q + 1); else if (carro.length < 100) carro.push({n, p, m, q: 1});
+  carroGuardar(); renderCarro();
+}
+function aBs(p, m){ if (m === 'bs') return p; const t = R[m] && R[m].v; return t ? p * t : NaN; }
+function carroTotal(){
+  let bs = 0, sin = 0;
+  carro.forEach(x => { const v = aBs(x.p, x.m) * x.q; if (v >= 0) bs += v; else sin++; });
+  return {bs, sin};
+}
+function carroTexto(){
+  const t = carroTotal(), L = ['🛒 Mi lista de compras'];
+  carro.forEach((x, i) => L.push((i + 1) + '. ' + (x.n || 'Producto') + (x.q > 1 ? ' x' + x.q : '') + ' — ' + MON[x.m].sim + ' ' + fmt.format(x.p * x.q)));
+  L.push('', 'Total: Bs ' + fmt.format(t.bs));
+  ['usd', 'euro'].forEach(k => { if (R[k] && R[k].v) L.push(MON[k].lab + ': ' + MON[k].sim + ' ' + fmt.format(t.bs / R[k].v)); });
+  L.push('precioenvivo.com');
+  return L.join('\n');
+}
+function renderCarro(){
+  const sec = $('#carro-sec'); if (!sec) return;
+  const vac = $('#carro-vacio'); if (vac) vac.hidden = carro.length > 0;
+  $('#carro-li').hidden = $('#carro-tot').hidden = $('#carro-acc').hidden = carro.length === 0;
+  const sel = $('#ca-m'); if (sel && !sel.options.length) sel.innerHTML = Object.keys(MON).map(k => '<option value="' + k + '">' + esc(MON[k].etq) + '</option>').join('');
+  if (!carro.length) return;
+  $('#carro-li').innerHTML = carro.map((x, i) => '<li><span class="cn">' + esc(x.n || 'Producto sin nombre') + '<small>' + esc(MON[x.m].sim + ' ' + fmt.format(x.p)) + (x.q > 1 ? ' c/u · ' + esc(MON[x.m].sim + ' ' + fmt.format(x.p * x.q)) : '') + '</small></span><span class="cq"><button type="button" data-ci="' + i + '" data-d="-1" aria-label="Quitar uno">−</button><b>' + x.q + '</b><button type="button" data-ci="' + i + '" data-d="1" aria-label="Agregar uno">+</button><button type="button" data-ci="' + i + '" data-d="x" aria-label="Eliminar">✕</button></span></li>').join('');
+  const t = carroTotal(), filas = [];
+  filas.push('<li class="main"><span>Total en bolívares</span><span><b class="v">Bs ' + esc(fmt.format(t.bs)) + '</b> <button type="button" class="cpy" data-c="' + numCopia(t.bs) + '">Copiar</button></span></li>');
+  ['usd', 'euro', 'usdt'].forEach(k => { if (R[k] && R[k].v) filas.push('<li><span>' + esc(MON[k].lab) + '</span><span><b>' + esc(MON[k].sim + ' ' + fmt.format(t.bs / R[k].v)) + '</b> <button type="button" class="cpy" data-c="' + numCopia(t.bs / R[k].v) + '">Copiar</button></span></li>'); });
+  if (t.sin) filas.push('<li><span>Faltan tasas para ' + t.sin + ' producto(s); no se sumaron.</span></li>');
+  $('#carro-tot').innerHTML = filas.join('');
+}
+$('#carro-li').addEventListener('click', e => {
+  const b = e.target.closest('[data-ci]'); if (!b) return;
+  const x = carro[+b.dataset.ci]; if (!x) return;
+  const d = b.dataset.d;
+  if (d === 'x') carro.splice(+b.dataset.ci, 1); else { x.q += +d; if (x.q < 1) carro.splice(+b.dataset.ci, 1); else if (x.q > 99) x.q = 99; }
+  carroGuardar(); renderCarro(); if (!scanEl.hidden) renderScan(true);
+});
+$('#carro-tot').addEventListener('click', async e => {
+  const b = e.target.closest('.cpy'); if (!b) return;
+  const ok = await copiarTexto(b.dataset.c); b.textContent = ok ? '✓ Copiado' : 'No se pudo';
+  setTimeout(() => { if (b.isConnected) b.textContent = 'Copiar'; }, 1600);
+});
+$('#carro-copy').addEventListener('click', async e => { const ok = await copiarTexto(carroTexto()); track('carro-copiar'); e.target.textContent = ok ? '✓ Copiada' : 'No se pudo'; setTimeout(() => { e.target.textContent = 'Copiar lista'; }, 1600); });
+$('#carro-wa').addEventListener('click', () => { track('carro-whatsapp'); window.open('https://wa.me/?text=' + encodeURIComponent(carroTexto()), '_blank', 'noopener'); });
+$('#carro-clear').addEventListener('click', e => {
+  const b = e.target;
+  if (b.dataset.sure !== '1'){ b.dataset.sure = '1'; b.textContent = 'Toca otra vez para vaciar'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Vaciar'; }, 3000); return; }
+  b.dataset.sure = ''; b.textContent = 'Vaciar'; carro = []; carroGuardar(); renderCarro();
+});
+$('#ca-ok').addEventListener('click', () => {
+  const p = parseMonto($('#ca-p').value || ''); if (!(p > 0)) { $('#ca-p').focus(); return; }
+  carroAgregar(($('#ca-n').value || '').trim().slice(0, 40), p, $('#ca-m').value);
+  $('#ca-n').value = ''; $('#ca-p').value = ''; track('carro-manual');
+});
+renderCarro();
 
 /* ---------- instalar como app ---------- */
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -1731,7 +1852,7 @@ if ('serviceWorker' in navigator && !CONFIG.ONESIGNAL_APP_ID){ window.addEventLi
 /* ---------- pestañas ---------- */
 function irTab(t, guardar){
   try { cerrarScan(); } catch(e){}
-  if (!['tasas', 'calculadora', 'dividir', 'precios', 'canales'].includes(t)) t = 'tasas';
+  if (!['tasas', 'calculadora', 'dividir', 'precios', 'canales', 'carrito'].includes(t)) t = 'tasas';
   document.body.dataset.tab = t;
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   if (guardar){ try { history.replaceState(null, '', t === 'tasas' ? location.pathname + location.search : '#' + t); } catch(e){} track('tab-' + t); }
