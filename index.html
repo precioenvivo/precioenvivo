@@ -365,7 +365,7 @@
     <p class="sub">Convierte entre dólares, euros y bolívares con la tasa de hoy</p>
     <label class="calc-lab" for="calc-monto">Monto</label>
     <div class="calc-in"><span id="calc-sim">$</span><input id="calc-monto" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="calc-foot"></div>
-    <button type="button" class="btn scan-btn" id="scan-open">📷 Escáner en vivo</button>
+    <button type="button" class="btn scan-btn" id="scan-open">📷 Escáner de precios</button>
     <p class="calc-lab calc-lab2" id="calc-src-lab">Ese monto está en:</p>
     <div class="calc-src calc-src4" id="calc-src" role="group" aria-labelledby="calc-src-lab"></div>
     <div class="calc-quick" id="calc-quick" role="group" aria-label="Montos rápidos"></div>
@@ -1704,7 +1704,10 @@ $('#scan-zp').addEventListener('click', e => { e.stopPropagation(); moverZoom(1)
 const esApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 let _instalar = null;
-if (esApp){ track('abierta-como-app'); }
+const yaInst = () => { try { return localStorage.getItem('app_inst') === '1'; } catch(e){ return false; } };
+const marcarInst = () => { try { localStorage.setItem('app_inst', '1'); } catch(e){} };
+if (esApp){ marcarInst(); track('abierta-como-app'); }
+else if (yaInst()){ /* ya la instaló: no mostrar el aviso */ }
 else {
   $('#instalar').hidden = false;
   if (esIOS) $('#instalar-btn').textContent = 'Cómo instalar';
@@ -1721,7 +1724,7 @@ else {
       ? 'Toca el botón Compartir (el cuadrado con la flecha) y luego "Agregar a pantalla de inicio".'
       : 'Abre el menú ⋮ de tu navegador y toca "Instalar app" o "Agregar a pantalla de inicio".';
   });
-  window.addEventListener('appinstalled', () => { track('app-instalada'); $('#instalar').hidden = true; });
+  window.addEventListener('appinstalled', () => { marcarInst(); track('app-instalada'); $('#instalar').hidden = true; });
 }
 if ('serviceWorker' in navigator && !CONFIG.ONESIGNAL_APP_ID){ window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
 
